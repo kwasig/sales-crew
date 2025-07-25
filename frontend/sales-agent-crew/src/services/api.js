@@ -16,6 +16,22 @@ const api = axios.create({
   }
 })
 
+export const trackSignup = (userData) => {
+  mixpanel.track('Sign Up', {
+    'User ID': userData.id,
+    'Email': userData.email,
+    'Signup Date': new Date().toISOString()
+  })
+}
+
+export const trackSignin = (userData) => {
+  mixpanel.track('Sign In', {
+    'User ID': userData.id,
+    'Email': userData.email,
+    'Signin Date': new Date().toISOString()
+  })
+}
+
 export const generateLeads = async (prompt, keys) => {
   try {
     if (!keys?.sambanovaKey || !keys?.exaKey) {
