@@ -28,4 +28,5 @@
 
 <script setup>
 import { SignIn } from '@clerk/vue'
+import { trackPageView, trackEvent } from '@/api.js'
 </script>
