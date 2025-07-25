@@ -17,7 +17,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 if (MIXPANEL_TOKEN) {
-  mixpanel.init(MIXPANEL_TOKEN, { track_pageview: true })
+  mixpanel.init(MIXPANEL_TOKEN, { track_pageview: true, persistence: 'localStorage' })
 }
 
 // Create and mount the app
