@@ -2,7 +2,10 @@
 import axios from 'axios'
 import mixpanel from 'mixpanel-browser'
 
-mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '')
+mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '', {
+  track_pageview: true,
+  persistence: 'localStorage'
+})
 
 // Use environment variable for the API base URL
 const API_URL = import.meta.env.PROD 
