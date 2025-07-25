@@ -5,6 +5,7 @@ import SearchSection from '../components/SearchSection.vue'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
 import SearchNotification from '../components/SearchNotification.vue'
+import { trackSearch, trackError } from '../api.js'
 
 const settingsModalRef = ref(null)
 const isLoading = ref(false)
@@ -50,8 +51,11 @@ const handleSearch = async (query) => {
     setTimeout(() => {
       showNotification.value = false
     }, 5000)
+
+    trackSearch(query, results.value.length, searchTime.value)
   } catch (error) {
     console.error('Search error:', error)
+    trackError(error)
     // Handle error (show notification, etc.)
   } finally {
     isLoading.value = false
