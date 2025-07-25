@@ -1,5 +1,6 @@
 // src/services/api.js
 import axios from 'axios'
+import mixpanel from 'mixpanel-browser'
 
 // Use environment variable for the API base URL
 const API_URL = import.meta.env.PROD 
@@ -36,4 +37,3 @@ export const generateLeads = async (prompt, keys) => {
 }
 
 export default api
-
