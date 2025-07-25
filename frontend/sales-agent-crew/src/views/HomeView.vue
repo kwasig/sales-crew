@@ -14,7 +14,11 @@ const showNotification = ref(false)
 const searchTime = ref(0)
 
 const handleSignup = (userData) => {
-  trackSignup(userData)
+  trackSignup({
+    ...userData,
+    timestamp: new Date().toISOString(),
+    event: 'signup_success'
+  })
 }
 
 const handleSearch = async (query) => {
