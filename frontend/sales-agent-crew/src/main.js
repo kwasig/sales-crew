@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { clerkPlugin } from '@clerk/vue'
+import mixpanel from 'mixpanel-browser'
 
 // Import your router
 import router from './router/index.js'
