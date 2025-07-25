@@ -32,6 +32,17 @@ export const trackSignin = (userData) => {
   })
 }
 
+export const trackEvent = (eventName, properties = {}) => {
+  mixpanel.track(eventName, properties)
+}
+
+export const trackPageView = (pageName) => {
+  mixpanel.track('Page View', {
+    'Page Name': pageName,
+    'Timestamp': new Date().toISOString()
+  })
+}
+
 export const generateLeads = async (prompt, keys) => {
   try {
     if (!keys?.sambanovaKey || !keys?.exaKey) {
