@@ -5,13 +5,17 @@ import SearchSection from '../components/SearchSection.vue'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
 import SearchNotification from '../components/SearchNotification.vue'
-import { trackSearch, trackError } from '../api.js'
+import { trackSearch, trackError, trackSignup } from '../api.js'
 
 const settingsModalRef = ref(null)
 const isLoading = ref(false)
 const results = ref([])
 const showNotification = ref(false)
 const searchTime = ref(0)
+
+const handleSignup = (userData) => {
+  trackSignup(userData)
+}
 
 const handleSearch = async (query) => {
   isLoading.value = true
@@ -74,6 +78,7 @@ const openSettingsModal = () => {
       <SearchSection
         @search="handleSearch"
         @openSettings="openSettingsModal"
+        @signup="handleSignup"
         :isLoading="isLoading"
       />
 
