@@ -9,10 +9,15 @@ import mixpanel from 'mixpanel-browser'
 import router from './router/index.js'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN
 
 
 if (!PUBLISHABLE_KEY) {
   throw new Error('Missing Publishable Key')
+}
+
+if (MIXPANEL_TOKEN) {
+  mixpanel.init(MIXPANEL_TOKEN, { track_pageview: true })
 }
 
 // Create and mount the app
