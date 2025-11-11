@@ -1,0 +1,4 @@
+crew-ai>=0.28.0
+langchain>=0.0.286
+python-dotenv>=1.0.0
+requests>=2.31.0
