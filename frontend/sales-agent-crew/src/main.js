@@ -3,15 +3,21 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { clerkPlugin } from '@clerk/vue'
+import mixpanel from 'mixpanel-browser'
 
 // Import your router
 import router from './router/index.js'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN
 
 
 if (!PUBLISHABLE_KEY) {
   throw new Error('Missing Publishable Key')
+}
+
+if (MIXPANEL_TOKEN) {
+  mixpanel.init(MIXPANEL_TOKEN, { track_pageview: true, persistence: 'localStorage' })
 }
 
 // Create and mount the app

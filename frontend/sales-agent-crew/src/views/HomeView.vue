@@ -5,12 +5,21 @@ import SearchSection from '../components/SearchSection.vue'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
 import SearchNotification from '../components/SearchNotification.vue'
+import { trackSearch, trackError, trackSignup } from '../api.js'
 
 const settingsModalRef = ref(null)
 const isLoading = ref(false)
 const results = ref([])
 const showNotification = ref(false)
 const searchTime = ref(0)
+
+const handleSignup = (userData) => {
+  trackSignup({
+    ...userData,
+    timestamp: new Date().toISOString(),
+    event: 'signup_success'
+  })
+}
 
 const handleSearch = async (query) => {
   isLoading.value = true
@@ -50,8 +59,11 @@ const handleSearch = async (query) => {
     setTimeout(() => {
       showNotification.value = false
     }, 5000)
+
+    trackSearch(query, results.value.length, searchTime.value)
   } catch (error) {
     console.error('Search error:', error)
+    trackError(error)
     // Handle error (show notification, etc.)
   } finally {
     isLoading.value = false
@@ -70,6 +82,7 @@ const openSettingsModal = () => {
       <SearchSection
         @search="handleSearch"
         @openSettings="openSettingsModal"
+        @signup="handleSignup"
         :isLoading="isLoading"
       />
 

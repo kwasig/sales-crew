@@ -20,6 +20,7 @@
               footerAction: 'hidden'
             }
           }"
+          @after-sign-in="handleAfterSignIn"
         />
       </div>
     </div>
@@ -28,4 +29,13 @@
 
 <script setup>
 import { SignIn } from '@clerk/vue'
+import { trackEvent } from '@/api.js'
+
+const handleAfterSignIn = (user) => {
+  trackEvent('sign_in_success', {
+    user_id: user.id,
+    email: user.primaryEmailAddress.emailAddress,
+    timestamp: new Date().toISOString()
+  })
+}
 </script>
