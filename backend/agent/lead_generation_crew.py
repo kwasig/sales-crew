@@ -9,6 +9,7 @@ if parent_dir not in sys.path:
 from crewai import Agent, Task, Crew, LLM, Process
 from tools.company_intelligence_tool import CompanyIntelligenceTool
 from tools.market_research_tool import MarketResearchTool
+from tools.financial_analysis_tool import FinancialAnalysisTool
 from typing import List
 from pydantic import BaseModel
 
@@ -100,6 +101,19 @@ class ResearchCrew:
             allow_delegation=False,
             verbose=True,
             tools=[MarketResearchTool(api_key=self.exa_key)]
+        )
+
+        # 3.5) financial_analysis_agent (NEW)
+        self.financial_analysis_agent = Agent(
+            role="Financial Analysis Specialist",
+            goal="Provide comprehensive financial analysis with detailed news integration",
+            backstory="You are a financial analyst with expertise in market research, "
+                     "news analysis, and investment recommendations. You provide "
+                     "detailed financial insights with comprehensive news coverage.",
+            llm=self.llm,
+            allow_delegation=False,
+            verbose=True,
+            tools=[FinancialAnalysisTool(api_key=self.exa_key)]
         )
 
         # 4) outreach_agent
@@ -212,6 +226,34 @@ class ResearchCrew:
             output_pydantic=ExtractedMarketTrendList
         )
 
+        # 4.5) financial_analysis_task (NEW)
+        self.financial_analysis_task = Task(
+            description=(
+                "Use Financial Analysis Intelligence to provide comprehensive news integration "
+                "and detailed financial analysis for the financial analysis route. "
+                "This enhances the news section with super detailed analysis based on latest news.\n"
+                "Parameters:\n"
+                "  company_name={company_name} (from data_enrichment_task)\n"
+                "  industry={industry}\n"
+                "  product={product}\n"
+                "  max_results=20 (for comprehensive coverage)\n\n"
+                "Return detailed financial analysis with market trends, investment recommendations, "
+                "risk assessment, and comprehensive news integration."
+            ),
+            expected_output=(
+                "A comprehensive financial analysis JSON containing:\n"
+                "- Company analysis with latest news\n"
+                "- Market outlook and sentiment analysis\n"
+                "- Investment recommendations\n"
+                "- Risk assessment\n"
+                "- Key insights from recent news\n"
+                "- Detailed news articles with summaries"
+            ),
+            agent=self.financial_analysis_agent,
+            context=[self.data_enrichment_task],
+            output_pydantic=dict  # Using dict for flexible output structure
+        )
+
         # 5) outreach_task
         self.outreach_task = Task(
             description=(
@@ -219,9 +261,10 @@ class ResearchCrew:
                 "company_name, website, headquarters, funding_status, email_subject, email_body. "
                 "Body must start 'Dear [Company]' (100-150 words). Return ONLY a JSON array. "
                 "Be sure to mention the company's product or service in the email body and use all relevant information."
-                "We should map ALL fields collected in the data_enrichment_task and market_trends_task to the response json"
-                "To create a hyper-personalized email based on relevant current information."
-                "The email should be tailored to the company's product or service, and the market trends."
+                "We should map ALL fields collected in the data_enrichment_task, market_trends_task, "
+                "and financial_analysis_task to the response json to create a hyper-personalized email "
+                "based on relevant current information. The email should be tailored to the company's "
+                "product or service, market trends, and latest financial news."
             ),
             expected_output=(
                 "[\n"
@@ -235,26 +278,29 @@ class ResearchCrew:
                 "    'relevant_trends': '...', "
                 "    'opportunities': '...', "
                 "    'challenges': '...', "
+                "    'financial_insights': '...', "
+                "    'market_outlook': '...', "
                 "    'email_subject': '...', "
                 "    'email_body': '...'\n"
                 "  }\n"
                 "]"
             ),
             agent=self.outreach_agent,
-            context=[self.market_trends_task, self.data_enrichment_task],
+            context=[self.market_trends_task, self.data_enrichment_task, self.financial_analysis_task],
             output_pydantic=OutreachList
         )
 
 
     def execute_research(self, inputs: dict) -> str:
         """
-        Run the 5-step pipeline with 4 agents in sequential order.
+        Run the 6-step pipeline with 5 agents in sequential order.
         """
         crew = Crew(
             agents=[
                 self.aggregator_agent,
                 self.data_extraction_agent,
                 self.market_trends_agent,
+                self.financial_analysis_agent,
                 self.outreach_agent
             ],
             tasks=[
@@ -262,6 +308,7 @@ class ResearchCrew:
                 self.data_extraction_task,
                 self.data_enrichment_task,
                 self.market_trends_task,
+                self.financial_analysis_task,
                 self.outreach_task
             ],
             process=Process.sequential,
