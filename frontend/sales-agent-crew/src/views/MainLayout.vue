@@ -12,6 +12,9 @@
       <main class="flex-1 overflow-auto">
         <div class="container mx-auto px-4 py-8">
           <div class="max-w-4xl mx-auto">
+            <!-- Usage Dashboard -->
+            <UsageDashboard class="mb-6" />
+            
             <!-- Search Section (Fixed) -->
             <div class="sticky top-0 z-10 bg-gray-50 pt-4 pb-2">
               <SearchSection 
@@ -92,6 +95,7 @@ import { generateLeads } from '../services/api'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
 import { useAuth } from '@clerk/vue'
+import UsageDashboard from '../components/UsageDashboard.vue'
 
 const results = ref([])
 const expandedItems = ref({})
@@ -107,6 +111,7 @@ const errorMessage = ref('')
 const settingsModalRef = ref(null)
 const { userId } = useAuth()
 const headerRef = ref(null)
+const usageDashboardRef = ref(null)
 
 const loadingMessages = [
   'Fetching company details',
@@ -163,6 +168,9 @@ const handleSearch = async (query) => {
     
     // Add to sidebar history
     sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    
+    // Track usage metrics
+    await trackUsage('lead_generation', executionTime.value, true)
 
   } catch (error) {
     console.error('Search error:', error)
@@ -223,6 +231,25 @@ const openSettings = () => {
     headerRef.value.openSettings()
   } else {
     console.error('Header component is not available.')
+  }
+}
+
+const trackUsage = async (action, duration, success = true) => {
+  try {
+    await fetch('http://localhost:8001/track-usage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        action: action,
+        duration: duration / 1000, // Convert to seconds
+        success: success
+      })
+    })
+  } catch (error) {
+    console.error('Failed to track usage:', error)
   }
 }
 </script>
