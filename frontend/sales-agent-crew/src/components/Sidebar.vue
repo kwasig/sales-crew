@@ -102,6 +102,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Usage Dashboard Component -->
+      <UsageDashboard v-show="!isCollapsed" />
     </div>
 
     <!-- Confirmation Modal -->
@@ -131,6 +134,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
+import UsageDashboard from './UsageDashboard.vue'
 
 const { userId } = useAuth()
 const searchHistory = ref([])

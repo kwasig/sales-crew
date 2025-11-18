@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import time
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from .usage_api import log_usage_middleware
 
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -50,11 +51,20 @@ class LeadGenerationAPI:
             allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["*"],
-            allow_headers=["*", "x-sambanova-key", "x-exa-key"],
+            allow_headers=["*", "x-sambanova-key", "x-exa-key", "x-user-id"],
         )
+        
+        # Add usage tracking middleware
+        self.app.middleware("http")(log_usage_middleware)
         
 
     def setup_routes(self):
+        # Import usage_api router
+        from .usage_api import router as usage_router
+        
+        # Include usage API routes
+        self.app.include_router(usage_router, prefix="/api/usage")
+        
         @self.app.post("/generate-leads")
         async def generate_leads(request: Request, background_tasks: BackgroundTasks):
             # Extract API keys from headers
