@@ -24,7 +24,8 @@ export const generateLeads = async (prompt, keys) => {
       {
         headers: {
           'x-sambanova-key': keys.sambanovaKey,
-          'x-exa-key': keys.exaKey
+          'x-exa-key': keys.exaKey,
+          'x-user-id': keys.userId || 'anonymous'
         }
       }
     )
@@ -32,6 +33,26 @@ export const generateLeads = async (prompt, keys) => {
   } catch (error) {
     console.error('API error:', error)
     throw error
+  }
+}
+
+export const getUsageMetrics = async (userId) => {
+  try {
+    const response = await api.get(`/api/usage/metrics/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching usage metrics:', error)
+    return { success: false, data: null }
+  }
+}
+
+export const getUsageSummary = async (userId) => {
+  try {
+    const response = await api.get(`/api/usage/metrics/${userId}/summary`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching usage summary:', error)
+    return { success: false, data: null }
   }
 }
 
