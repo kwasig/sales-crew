@@ -68,6 +68,8 @@ class LeadGenerationAPI:
                 )
 
             try:
+                start_time = time.time()
+                
                 # Get request body
                 body = await request.json()
                 prompt = body.get("prompt", "")
@@ -96,6 +98,23 @@ class LeadGenerationAPI:
                 # Parse result and return
                 parsed_result = json.loads(result)
                 outreach_list = parsed_result.get("outreach_list", [])
+                
+                # Log search for metrics (in a real implementation, this would be async)
+                try:
+                    # This would be an async call to the metrics service
+                    # For now, we'll just log it locally
+                    search_metrics = {
+                        "user_id": "anonymous",  # In real implementation, get from auth
+                        "query": prompt,
+                        "results_count": len(outreach_list),
+                        "execution_time": time.time() - start_time,
+                        "timestamp": time.time()
+                    }
+                    # In production, send this to a metrics service
+                    print(f"[METRICS] Search logged: {search_metrics}")
+                except Exception as e:
+                    print(f"[METRICS] Failed to log search: {e}")
+                
                 return JSONResponse(content=outreach_list)
 
             except json.JSONDecodeError:

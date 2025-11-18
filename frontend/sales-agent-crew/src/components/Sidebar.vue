@@ -102,6 +102,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Usage Metrics Component -->
+      <UsageMetrics ref="usageMetricsRef" v-show="!isCollapsed" />
     </div>
 
     <!-- Confirmation Modal -->
@@ -131,11 +134,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
+import UsageMetrics from './UsageMetrics.vue'
 
 const { userId } = useAuth()
 const searchHistory = ref([])
 const isCollapsed = ref(false)
 const showConfirmModal = ref(false)
+const usageMetricsRef = ref(null)
 
 const loadSearch = (search) => {
   emit('loadSearch', search)
@@ -213,6 +218,14 @@ defineExpose({
     searchHistory.value.unshift(newSearch)
     searchHistory.value = searchHistory.value.slice(0, 50) // Keep only last 50 searches
     saveHistory()
+    
+    // Update usage metrics when a search is added
+    if (usageMetricsRef.value && usageMetricsRef.value.updateMetrics) {
+      usageMetricsRef.value.updateMetrics({
+        results,
+        executionTime: 0 // This would be passed from the search execution
+      })
+    }
   }
 })
 </script> 

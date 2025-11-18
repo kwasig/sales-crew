@@ -135,6 +135,11 @@ const handleSearch = async (query) => {
   startLoadingMessages()
   
   try {
+    // Simulate search progress in metrics
+    if (sidebarRef.value && sidebarRef.value.usageMetricsRef) {
+      sidebarRef.value.usageMetricsRef.simulateSearchProgress()
+    }
+    
     const keys = settingsModalRef.value?.getKeys()
     const sambanovaKey = keys?.sambanovaKey
     const exaKey = keys?.exaKey
@@ -163,6 +168,14 @@ const handleSearch = async (query) => {
     
     // Add to sidebar history
     sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    
+    // Update metrics with execution time
+    if (sidebarRef.value && sidebarRef.value.usageMetricsRef) {
+      sidebarRef.value.usageMetricsRef.updateMetrics({
+        results: searchResults,
+        executionTime: executionTime.value
+      })
+    }
 
   } catch (error) {
     console.error('Search error:', error)
