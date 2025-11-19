@@ -19,6 +19,7 @@ if parent_dir not in sys.path:
 
 # Services, Tools, etc.
 from services.user_prompt_extractor_service import UserPromptExtractor
+from services.usage_tracking_service import usage_tracker
 from agent.lead_generation_crew import ResearchCrew
 
 # Create a global ThreadPoolExecutor if you want concurrency in a single worker
@@ -67,6 +68,10 @@ class LeadGenerationAPI:
                     content={"error": "Missing required API keys"}
                 )
 
+            # Track usage session
+            user_id = request.headers.get("x-user-id", "anonymous")
+            session_id = None
+            
             try:
                 # Get request body
                 body = await request.json()
@@ -77,6 +82,16 @@ class LeadGenerationAPI:
                         status_code=400,
                         content={"error": "Missing prompt in request body"}
                     )
+
+                # Start tracking the search session
+                session_id = usage_tracker.track_search_session(
+                    user_id=user_id,
+                    query=prompt,
+                    api_keys_used={
+                        "sambanova": bool(sambanova_key),
+                        "exa": bool(exa_key)
+                    }
+                )
 
                 # Initialize services with API keys
                 extractor = UserPromptExtractor(sambanova_key)
@@ -90,20 +105,29 @@ class LeadGenerationAPI:
                 loop = asyncio.get_running_loop()
                 future = executor.submit(crew.execute_research, extracted_info)
                 result = await loop.run_in_executor(None, future.result)
-                # Alternatively:
-                # result = await loop.run_in_executor(executor, crew.execute_research, extracted_info)
 
                 # Parse result and return
                 parsed_result = json.loads(result)
                 outreach_list = parsed_result.get("outreach_list", [])
+                
+                # Mark session as completed
+                if session_id:
+                    usage_tracker.end_search_session(session_id, len(outreach_list))
+                
                 return JSONResponse(content=outreach_list)
 
             except json.JSONDecodeError:
+                # Mark session as failed
+                if session_id:
+                    usage_tracker.end_search_session(session_id, 0)
                 return JSONResponse(
                     status_code=500,
                     content={"error": "Invalid JSON response from research crew"}
                 )
             except Exception as e:
+                # Mark session as failed
+                if session_id:
+                    usage_tracker.end_search_session(session_id, 0)
                 return JSONResponse(
                     status_code=500,
                     content={"error": str(e)}

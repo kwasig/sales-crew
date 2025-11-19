@@ -89,6 +89,7 @@ import SearchSection from '../components/SearchSection.vue'
 import SearchNotification from '../components/SearchNotification.vue'
 import Sidebar from '../components/Sidebar.vue'
 import { generateLeads } from '../services/api'
+import { trackSearchSession } from '../services/analytics'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
 import { useAuth } from '@clerk/vue'
@@ -142,6 +143,17 @@ const handleSearch = async (query) => {
     if (!sambanovaKey || !exaKey) {
       throw new Error('Missing API keys')
     }
+
+    // Track search session
+    await trackSearchSession({
+      user_id: userId,
+      query: query,
+      api_keys_used: {
+        sambanova: !!sambanovaKey,
+        exa: !!exaKey
+      },
+      timestamp: new Date().toISOString()
+    })
 
     const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
     results.value = searchResults

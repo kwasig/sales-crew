@@ -19,12 +19,16 @@ export const generateLeads = async (prompt, keys) => {
       throw new Error('API keys are required')
     }
 
+    // Get user ID from localStorage or use 'anonymous'
+    const userId = localStorage.getItem('user_id') || 'anonymous'
+
     const response = await api.post('/generate-leads', 
       { prompt },
       {
         headers: {
           'x-sambanova-key': keys.sambanovaKey,
-          'x-exa-key': keys.exaKey
+          'x-exa-key': keys.exaKey,
+          'x-user-id': userId
         }
       }
     )

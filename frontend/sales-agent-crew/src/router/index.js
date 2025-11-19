@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '../views/MainLayout.vue'
-// Import other views as needed
+import AnalyticsView from '../views/AnalyticsView.vue'
 
 const routes = [
   {
@@ -8,7 +8,11 @@ const routes = [
     name: 'home',
     component: MainLayout,
   },
-  // Add other routes here
+  {
+    path: '/analytics',
+    name: 'analytics',
+    component: AnalyticsView,
+  },
 ]
 
 const router = createRouter({
