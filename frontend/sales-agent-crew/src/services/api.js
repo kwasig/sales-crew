@@ -35,5 +35,66 @@ export const generateLeads = async (prompt, keys) => {
   }
 }
 
+export const getFinancialAnalysis = async (params, exaKey) => {
+  try {
+    if (!exaKey) {
+      throw new Error('Exa API key is required')
+    }
+
+    const response = await api.post('/financial/financial-analysis', 
+      params,
+      {
+        headers: {
+          'x-exa-key': exaKey
+        }
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error('Financial analysis API error:', error)
+    throw error
+  }
+}
+
+export const getUsageSummary = async () => {
+  try {
+    const response = await api.get('/api/usage/summary')
+    return response.data
+  } catch (error) {
+    console.error('Usage dashboard API error:', error)
+    throw error
+  }
+}
+
+export const getSystemHealth = async () => {
+  try {
+    const response = await api.get('/api/usage/health')
+    return response.data
+  } catch (error) {
+    console.error('System health API error:', error)
+    throw error
+  }
+}
+
+export const getPopularSearches = async (limit = 10) => {
+  try {
+    const response = await api.get(`/api/usage/searches/popular?limit=${limit}`)
+    return response.data
+  } catch (error) {
+    console.error('Popular searches API error:', error)
+    throw error
+  }
+}
+
+export const getDailyAnalytics = async () => {
+  try {
+    const response = await api.get('/api/usage/analytics/daily')
+    return response.data
+  } catch (error) {
+    console.error('Daily analytics API error:', error)
+    throw error
+  }
+}
+
 export default api
 

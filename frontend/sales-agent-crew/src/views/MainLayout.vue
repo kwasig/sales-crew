@@ -49,6 +49,16 @@
                 results length: {{ results.length }}
               </div>
 
+              <!-- Financial Analysis Section -->
+              <FinancialAnalysisCard
+                v-if="!isLoading && (results.length > 0 || results.length === 0)"
+                :company-name="results[0]?.company_name"
+                :industry="results[0]?.industry"
+                :product="results[0]?.product"
+                :exa-key="settingsModalRef?.getKeys()?.exaKey"
+                class="mt-6"
+              />
+
               <!-- Results Section -->
               <div v-if="!isLoading && results.length > 0" class="mt-8 space-y-4">
                 <CompanyResultCard 
@@ -91,6 +101,7 @@ import Sidebar from '../components/Sidebar.vue'
 import { generateLeads } from '../services/api'
 import SettingsModal from '../components/SettingsModal.vue'
 import CompanyResultCard from '../components/CompanyResultCard.vue'
+import FinancialAnalysisCard from '../components/FinancialAnalysisCard.vue'
 import { useAuth } from '@clerk/vue'
 
 const results = ref([])
