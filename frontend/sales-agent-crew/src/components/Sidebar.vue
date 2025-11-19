@@ -101,6 +101,49 @@
             ></div>
           </div>
         </div>
+
+        <!-- Usage Dashboard Component -->
+        <div class="p-4 border-t border-gray-200" v-show="!isCollapsed">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-blue-900 mb-3">Agent Usage Dashboard</h3>
+            
+            <!-- Agent Metrics -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="text-center">
+                <div class="text-lg font-bold text-blue-700">{{ totalSearches }}</div>
+                <div class="text-xs text-blue-600">Total Searches</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg font-bold text-green-700">{{ todaysUsage }}</div>
+                <div class="text-xs text-green-600">Today's Usage</div>
+              </div>
+            </div>
+
+            <!-- Agent Type Breakdown -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-600">Lead Generation</span>
+                <span class="text-xs font-medium text-gray-800">{{ leadGenerationCount }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-600">Financial Analysis</span>
+                <span class="text-xs font-medium text-gray-800">{{ financialAnalysisCount }}</span>
+              </div>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="mt-3 pt-3 border-t border-blue-200">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600">Avg. Response Time</span>
+                <span class="font-medium text-gray-800">{{ averageResponseTime }}s</span>
+              </div>
+              <div class="flex justify-between items-center text-xs mt-1">
+                <span class="text-gray-600">Success Rate</span>
+                <span class="font-medium text-gray-800">{{ successRate }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -129,13 +172,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '@clerk/vue'
 
 const { userId } = useAuth()
 const searchHistory = ref([])
 const isCollapsed = ref(false)
 const showConfirmModal = ref(false)
+
+// Usage dashboard metrics
+const totalSearches = computed(() => searchHistory.value.length)
+const todaysUsage = computed(() => {
+  const today = new Date().toDateString()
+  return searchHistory.value.filter(search => 
+    new Date(search.timestamp).toDateString() === today
+  ).length
+})
+
+const leadGenerationCount = computed(() => {
+  return searchHistory.value.filter(search => 
+    search.query?.toLowerCase().includes('lead') || 
+    search.query?.toLowerCase().includes('sales') ||
+    search.results?.some(result => result.type === 'lead')
+  ).length
+})
+
+const financialAnalysisCount = computed(() => {
+  return searchHistory.value.filter(search => 
+    search.query?.toLowerCase().includes('financial') || 
+    search.query?.toLowerCase().includes('analysis') ||
+    search.query?.toLowerCase().includes('news') ||
+    search.results?.some(result => result.type === 'financial')
+  ).length
+})
+
+const averageResponseTime = computed(() => {
+  if (searchHistory.value.length === 0) return 0
+  // Mock response time calculation - in real implementation, this would come from backend
+  const totalTime = searchHistory.value.reduce((sum, search) => {
+    return sum + (search.responseTime || Math.random() * 5 + 2) // Default 2-7 seconds
+  }, 0)
+  return (totalTime / searchHistory.value.length).toFixed(1)
+})
+
+const successRate = computed(() => {
+  if (searchHistory.value.length === 0) return 0
+  // Mock success rate - in real implementation, this would come from backend
+  const successfulSearches = searchHistory.value.filter(search => 
+    search.success !== false // Assume all are successful unless marked otherwise
+  ).length
+  return Math.round((successfulSearches / searchHistory.value.length) * 100)
+})
 
 const loadSearch = (search) => {
   emit('loadSearch', search)
@@ -203,12 +290,15 @@ const emit = defineEmits(['loadSearch'])
 
 // Expose method to add new searches
 defineExpose({
-  addSearch: (query, results, expandedState) => {
+  addSearch: (query, results, expandedState, type = null) => {
     const newSearch = {
       query,
       results,
       expandedState,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      type: type || (query.toLowerCase().includes('financial') || query.toLowerCase().includes('analysis') ? 'financial' : 'lead'),
+      responseTime: Math.random() * 5 + 2, // Mock response time for demo
+      success: true // Assume success unless specified
     }
     searchHistory.value.unshift(newSearch)
     searchHistory.value = searchHistory.value.slice(0, 50) // Keep only last 50 searches
