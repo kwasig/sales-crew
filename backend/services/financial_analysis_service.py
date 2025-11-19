@@ -21,6 +21,7 @@ class FinancialAnalysisService:
     def __init__(self):
         self.search_tool = ExaDevTool()
         self.news_categories = ["business", "finance", "technology", "markets"]
+        self.api_key = None  # API key will be set when making requests
     
     def get_financial_analysis(self, 
                              company_name: str = None,
@@ -116,10 +117,12 @@ class FinancialAnalysisService:
                     }
                     news_items.append(news_item)
                 return news_items
+            else:
+                print(f"Unexpected response format from Exa API: {type(exa_results)}")
+                return []
         except Exception as e:
             print(f"Error fetching financial news: {e}")
-        
-        return []
+            return []
     
     def _extract_date(self, result: Dict) -> str:
         """Extract or estimate publication date"""
