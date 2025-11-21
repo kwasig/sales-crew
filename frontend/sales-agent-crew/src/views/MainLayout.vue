@@ -143,8 +143,23 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
-    results.value = searchResults
+    const responseData = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    let outreachList = []
+    if (Array.isArray(responseData)) {
+      outreachList = responseData
+    } else {
+      outreachList = responseData.outreach_list || []
+      if (responseData.usage_metrics) {
+        sidebarRef.value?.setMetrics({
+          agentCount: responseData.usage_metrics.total_agents || 0,
+          taskCount: responseData.usage_metrics.total_tasks || 0,
+          totalTokens: responseData.usage_metrics.total_tokens || 0
+        })
+      }
+    }
+    
+    results.value = outreachList
     
     // Calculate execution time
     executionTime.value = Date.now() - searchStartTime.value
@@ -158,11 +173,11 @@ const handleSearch = async (query) => {
     // Save to search history
     // Get the current expanded state for all results
     const expandedState = Object.fromEntries(
-      searchResults.map((_, index) => [index, expandedItems.value[index] || false])
+      outreachList.map((_, index) => [index, expandedItems.value[index] || false])
     )
     
     // Add to sidebar history
-    sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    sidebarRef.value?.addSearch(query, outreachList, expandedState)
 
   } catch (error) {
     console.error('Search error:', error)
