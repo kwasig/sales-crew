@@ -316,7 +316,26 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        # Extract metrics
+        usage_metrics = {
+            "total_agents": 5,
+            "total_tasks": 6,
+            "total_tokens": getattr(results, "token_usage", {}).get("total_tokens", 0),
+            "prompt_tokens": getattr(results, "token_usage", {}).get("prompt_tokens", 0),
+            "completion_tokens": getattr(results, "token_usage", {}).get("completion_tokens", 0),
+            "successful_requests": getattr(results, "token_usage", {}).get("successful_requests", 0)
+        }
+
+        # Combine outreach list and metrics
+        output_data = results.pydantic.model_dump()
+        
+        final_response = {
+            "outreach_list": output_data.get("outreach_list", []),
+            "usage_metrics": usage_metrics
+        }
+        
+        return json.dumps(final_response)
 
 
 def main():
