@@ -102,6 +102,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Usage Component -->
+      <div class="p-4 border-t border-gray-200 bg-gray-50" v-if="!isCollapsed && currentMetrics">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">Usage Metrics</h3>
+        <div class="space-y-2 text-xs text-gray-600">
+          <div class="flex justify-between">
+            <span>Agents Used:</span>
+            <span class="font-medium">{{ currentMetrics.agent_count }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Execution Time:</span>
+            <span class="font-medium">{{ (currentMetrics.execution_time).toFixed(2) }}s</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Confirmation Modal -->
@@ -131,6 +146,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
+
+const props = defineProps({
+  currentMetrics: {
+    type: Object,
+    default: null
+  }
+})
 
 const { userId } = useAuth()
 const searchHistory = ref([])
@@ -203,11 +225,12 @@ const emit = defineEmits(['loadSearch'])
 
 // Expose method to add new searches
 defineExpose({
-  addSearch: (query, results, expandedState) => {
+  addSearch: (query, results, expandedState, metrics) => {
     const newSearch = {
       query,
       results,
       expandedState,
+      metrics,
       timestamp: Date.now()
     }
     searchHistory.value.unshift(newSearch)

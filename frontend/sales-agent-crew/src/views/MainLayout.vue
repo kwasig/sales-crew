@@ -1,7 +1,12 @@
 <template>
   <div class="h-screen flex">
     <!-- Sidebar -->
-    <Sidebar ref="sidebarRef" @loadSearch="handleLoadSearch" class="h-screen flex-shrink-0" />
+    <Sidebar 
+      ref="sidebarRef" 
+      @loadSearch="handleLoadSearch" 
+      :current-metrics="currentMetrics"
+      class="h-screen flex-shrink-0" 
+    />
     
     <!-- Main Content -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
@@ -107,6 +112,7 @@ const errorMessage = ref('')
 const settingsModalRef = ref(null)
 const { userId } = useAuth()
 const headerRef = ref(null)
+const currentMetrics = ref(null)
 
 const loadingMessages = [
   'Fetching company details',
@@ -143,11 +149,27 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const response = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    let searchResults = []
+    let metrics = null
+
+    if (response.results) {
+      searchResults = response.results
+      metrics = response.metrics
+    } else {
+      searchResults = response
+    }
+
     results.value = searchResults
+    currentMetrics.value = metrics
     
     // Calculate execution time
-    executionTime.value = Date.now() - searchStartTime.value
+    if (metrics && metrics.execution_time) {
+      executionTime.value = metrics.execution_time * 1000
+    } else {
+      executionTime.value = Date.now() - searchStartTime.value
+    }
     
     // Show completion notification
     showCompletion.value = true
@@ -162,7 +184,7 @@ const handleSearch = async (query) => {
     )
     
     // Add to sidebar history
-    sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    sidebarRef.value?.addSearch(query, searchResults, expandedState, metrics)
 
   } catch (error) {
     console.error('Search error:', error)
@@ -195,6 +217,12 @@ const handleLoadSearch = (search) => {
   expandedItems.value = search.expandedState || 
     Object.fromEntries(search.results.map((_, index) => [index, false]))
   
+  if (search.metrics) {
+    currentMetrics.value = search.metrics
+  } else {
+    currentMetrics.value = null
+  }
+
   // Scroll to top of results
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }

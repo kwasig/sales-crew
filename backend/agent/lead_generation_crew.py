@@ -318,6 +318,9 @@ class ResearchCrew:
         results = crew.kickoff(inputs=inputs)
         return results.pydantic.model_dump_json()
 
+    def get_agent_count(self) -> int:
+        return 5
+
 
 def main():
     crew = ResearchCrew()
