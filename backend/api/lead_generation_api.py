@@ -85,18 +85,33 @@ class LeadGenerationAPI:
                 # Initialize crew with API keys
                 crew = ResearchCrew(sambanova_key=sambanova_key, exa_key=exa_key)
 
+                # Start timer
+                start_time = time.time()
+
                 # Offload CPU-bound or time-consuming "execute_research" call 
                 # to a separate thread so it doesn't block the async event loop.
                 loop = asyncio.get_running_loop()
                 future = executor.submit(crew.execute_research, extracted_info)
                 result = await loop.run_in_executor(None, future.result)
-                # Alternatively:
-                # result = await loop.run_in_executor(executor, crew.execute_research, extracted_info)
+                
+                # End timer
+                end_time = time.time()
+                execution_time = end_time - start_time
 
                 # Parse result and return
                 parsed_result = json.loads(result)
                 outreach_list = parsed_result.get("outreach_list", [])
-                return JSONResponse(content=outreach_list)
+                
+                # Get agent count
+                agent_count = crew.get_agent_count()
+                
+                return JSONResponse(content={
+                    "results": outreach_list,
+                    "metrics": {
+                        "agent_count": agent_count,
+                        "execution_time": execution_time
+                    }
+                })
 
             except json.JSONDecodeError:
                 return JSONResponse(
