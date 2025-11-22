@@ -95,8 +95,14 @@ class LeadGenerationAPI:
 
                 # Parse result and return
                 parsed_result = json.loads(result)
-                outreach_list = parsed_result.get("outreach_list", [])
-                return JSONResponse(content=outreach_list)
+                
+                # Return the full result which includes outreach_list and usage_metrics
+                # If the result is the old format (just a list or dict without usage), we wrap it
+                if "outreach_list" not in parsed_result and isinstance(parsed_result, list):
+                     # Fallback for backward compatibility if needed, though we changed the agent
+                     return JSONResponse(content={"outreach_list": parsed_result, "usage_metrics": {}})
+                
+                return JSONResponse(content=parsed_result)
 
             except json.JSONDecodeError:
                 return JSONResponse(

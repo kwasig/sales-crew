@@ -316,7 +316,34 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        # Extract usage metrics if available
+        usage_metrics = {}
+        if hasattr(results, 'token_usage'):
+             usage = results.token_usage
+             if isinstance(usage, dict):
+                 usage_metrics = usage
+             elif hasattr(usage, 'model_dump'):
+                 usage_metrics = usage.model_dump()
+             elif hasattr(usage, 'dict'):
+                 usage_metrics = usage.dict()
+             else:
+                 try:
+                     usage_metrics = vars(usage)
+                 except:
+                     pass
+        
+        # Handle pydantic output
+        outreach_list = []
+        if hasattr(results, 'pydantic') and results.pydantic:
+            outreach_list = results.pydantic.model_dump().get("outreach_list", [])
+            
+        output_data = {
+            "outreach_list": outreach_list,
+            "usage_metrics": usage_metrics
+        }
+        
+        return json.dumps(output_data)
 
 
 def main():
