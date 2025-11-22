@@ -143,7 +143,19 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const response = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    // Handle both old (array) and new (object) response formats
+    let searchResults = []
+    if (Array.isArray(response)) {
+      searchResults = response
+    } else {
+      searchResults = response.outreach_list || []
+      if (response.usage_metrics) {
+        sidebarRef.value?.updateUsage(response.usage_metrics)
+      }
+    }
+    
     results.value = searchResults
     
     // Calculate execution time
