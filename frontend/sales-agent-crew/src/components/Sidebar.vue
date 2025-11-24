@@ -102,6 +102,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Usage Component -->
+      <UsageComponent v-if="!isCollapsed && usage" :usage="usage" />
     </div>
 
     <!-- Confirmation Modal -->
@@ -131,11 +134,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
+import UsageComponent from './UsageComponent.vue'
 
 const { userId } = useAuth()
 const searchHistory = ref([])
 const isCollapsed = ref(false)
 const showConfirmModal = ref(false)
+
+defineProps({
+  usage: Object
+})
 
 const loadSearch = (search) => {
   emit('loadSearch', search)
@@ -203,11 +211,12 @@ const emit = defineEmits(['loadSearch'])
 
 // Expose method to add new searches
 defineExpose({
-  addSearch: (query, results, expandedState) => {
+  addSearch: (query, results, expandedState, usage) => {
     const newSearch = {
       query,
       results,
       expandedState,
+      usage,
       timestamp: Date.now()
     }
     searchHistory.value.unshift(newSearch)
