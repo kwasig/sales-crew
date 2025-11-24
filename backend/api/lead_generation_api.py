@@ -95,8 +95,16 @@ class LeadGenerationAPI:
 
                 # Parse result and return
                 parsed_result = json.loads(result)
-                outreach_list = parsed_result.get("outreach_list", [])
-                return JSONResponse(content=outreach_list)
+                
+                # Extract data and usage metrics
+                data = parsed_result.get("data", {})
+                outreach_list = data.get("outreach_list", [])
+                usage_metrics = parsed_result.get("usage_metrics", {})
+                
+                return JSONResponse(content={
+                    "outreach_list": outreach_list,
+                    "usage_metrics": usage_metrics
+                })
 
             except json.JSONDecodeError:
                 return JSONResponse(
