@@ -143,7 +143,18 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const response = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    let searchResults = []
+    let usage = null
+    
+    if (response.results) {
+      searchResults = response.results
+      usage = response.usage
+    } else {
+      searchResults = response
+    }
+    
     results.value = searchResults
     
     // Calculate execution time
@@ -162,7 +173,7 @@ const handleSearch = async (query) => {
     )
     
     // Add to sidebar history
-    sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    sidebarRef.value?.addSearch(query, searchResults, expandedState, usage)
 
   } catch (error) {
     console.error('Search error:', error)
