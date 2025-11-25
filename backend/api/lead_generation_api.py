@@ -94,9 +94,14 @@ class LeadGenerationAPI:
                 # result = await loop.run_in_executor(executor, crew.execute_research, extracted_info)
 
                 # Parse result and return
-                parsed_result = json.loads(result)
-                outreach_list = parsed_result.get("outreach_list", [])
-                return JSONResponse(content=outreach_list)
+                # result is now a dict containing "data" and "usage"
+                outreach_list = result.get("data", {}).get("outreach_list", [])
+                usage = result.get("usage", {})
+                
+                return JSONResponse(content={
+                    "results": outreach_list,
+                    "usage": usage
+                })
 
             except json.JSONDecodeError:
                 return JSONResponse(

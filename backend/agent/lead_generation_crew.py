@@ -291,7 +291,7 @@ class ResearchCrew:
         )
 
 
-    def execute_research(self, inputs: dict) -> str:
+    def execute_research(self, inputs: dict) -> dict:
         """
         Run the 6-step pipeline with 5 agents in sequential order.
         """
@@ -316,7 +316,20 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        # Extract usage metrics
+        usage_metrics = {
+            "agentCount": len(crew.agents),
+            "totalTokens": results.token_usage.total_tokens if hasattr(results, 'token_usage') else 0,
+            "promptTokens": results.token_usage.prompt_tokens if hasattr(results, 'token_usage') else 0,
+            "completionTokens": results.token_usage.completion_tokens if hasattr(results, 'token_usage') else 0,
+            "successfulRequests": results.token_usage.successful_requests if hasattr(results, 'token_usage') else 0
+        }
+
+        return {
+            "data": results.pydantic.model_dump(),
+            "usage": usage_metrics
+        }
 
 
 def main():
