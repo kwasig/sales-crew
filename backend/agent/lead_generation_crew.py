@@ -318,6 +318,14 @@ class ResearchCrew:
         results = crew.kickoff(inputs=inputs)
         return results.pydantic.model_dump_json()
 
+    def get_usage_metrics(self):
+        return {
+            "agents_used": 5,
+            "total_tasks": 6,
+            "model": "Meta-Llama-3.1-70B-Instruct"
+        }
+
+
 
 def main():
     crew = ResearchCrew()

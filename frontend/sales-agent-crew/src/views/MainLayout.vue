@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen flex">
     <!-- Sidebar -->
-    <Sidebar ref="sidebarRef" @loadSearch="handleLoadSearch" class="h-screen flex-shrink-0" />
+    <Sidebar ref="sidebarRef" @loadSearch="handleLoadSearch" :usage="usageData" class="h-screen flex-shrink-0" />
     
     <!-- Main Content -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
@@ -94,6 +94,7 @@ import CompanyResultCard from '../components/CompanyResultCard.vue'
 import { useAuth } from '@clerk/vue'
 
 const results = ref([])
+const usageData = ref(null)
 const expandedItems = ref({})
 const copySuccess = ref({})
 const isLoading = ref(false)
@@ -143,8 +144,20 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const response = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    let searchResults = []
+    let usage = null
+    
+    if (response.outreach_list) {
+      searchResults = response.outreach_list
+      usage = response.usage
+    } else {
+      searchResults = response
+    }
+
     results.value = searchResults
+    usageData.value = usage
     
     // Calculate execution time
     executionTime.value = Date.now() - searchStartTime.value
@@ -162,7 +175,7 @@ const handleSearch = async (query) => {
     )
     
     // Add to sidebar history
-    sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    sidebarRef.value?.addSearch(query, searchResults, expandedState, usage)
 
   } catch (error) {
     console.error('Search error:', error)
@@ -192,6 +205,7 @@ const copyToClipboard = async (text, index) => {
 // Update handleLoadSearch to restore expanded state
 const handleLoadSearch = (search) => {
   results.value = search.results
+  usageData.value = search.usage
   expandedItems.value = search.expandedState || 
     Object.fromEntries(search.results.map((_, index) => [index, false]))
   
