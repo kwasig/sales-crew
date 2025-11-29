@@ -19,7 +19,7 @@ class ExaDevToolSchema(BaseModel):
 class ExaDevTool(BaseTool):
     name: str = "Exa Search Tool"
     description: str = "Use Exa to perform semantic search with raw HTTP POST. Returns JSON with title, url, text, summary, etc."
-    args_schema = ExaDevToolSchema
+    args_schema: Type[BaseModel] = ExaDevToolSchema
 
     def _run(self, **kwargs: Any) -> Any:
         search_query = kwargs.get("search_query")

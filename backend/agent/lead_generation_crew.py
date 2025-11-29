@@ -316,7 +316,13 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        # Prepare the response with both data and usage metrics
+        response_data = {
+            "data": results.pydantic.model_dump(),
+            "usage_metrics": results.token_usage
+        }
+        return json.dumps(response_data)
 
 
 def main():
