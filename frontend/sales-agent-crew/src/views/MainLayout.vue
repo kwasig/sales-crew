@@ -1,7 +1,12 @@
 <template>
   <div class="h-screen flex">
     <!-- Sidebar -->
-    <Sidebar ref="sidebarRef" @loadSearch="handleLoadSearch" class="h-screen flex-shrink-0" />
+    <Sidebar 
+      ref="sidebarRef" 
+      @loadSearch="handleLoadSearch" 
+      class="h-screen flex-shrink-0" 
+      :usageMetrics="usageMetrics"
+    />
     
     <!-- Main Content -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
@@ -94,6 +99,7 @@ import CompanyResultCard from '../components/CompanyResultCard.vue'
 import { useAuth } from '@clerk/vue'
 
 const results = ref([])
+const usageMetrics = ref(null)
 const expandedItems = ref({})
 const copySuccess = ref({})
 const isLoading = ref(false)
@@ -143,7 +149,17 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const response = await generateLeads(query, { sambanovaKey, exaKey })
+    
+    let searchResults = []
+    if (response.outreach_list) {
+      searchResults = response.outreach_list
+      usageMetrics.value = response.usage_metrics || null
+    } else if (Array.isArray(response)) {
+      searchResults = response
+      usageMetrics.value = null
+    }
+    
     results.value = searchResults
     
     // Calculate execution time
@@ -162,7 +178,7 @@ const handleSearch = async (query) => {
     )
     
     // Add to sidebar history
-    sidebarRef.value?.addSearch(query, searchResults, expandedState)
+    sidebarRef.value?.addSearch(query, searchResults, expandedState, usageMetrics.value)
 
   } catch (error) {
     console.error('Search error:', error)
@@ -194,6 +210,7 @@ const handleLoadSearch = (search) => {
   results.value = search.results
   expandedItems.value = search.expandedState || 
     Object.fromEntries(search.results.map((_, index) => [index, false]))
+  usageMetrics.value = search.usageMetrics || null
   
   // Scroll to top of results
   window.scrollTo({ top: 0, behavior: 'smooth' })
