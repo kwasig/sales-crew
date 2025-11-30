@@ -28,7 +28,28 @@ export const generateLeads = async (prompt, keys) => {
         }
       }
     )
-    return response.data
+    
+    // Handle both old and new response formats
+    const responseData = response.data
+    
+    // If response has usage_metrics, return structured data
+    if (responseData.usage_metrics) {
+      return {
+        outreach_list: responseData.outreach_list || [],
+        usage_metrics: responseData.usage_metrics
+      }
+    }
+    
+    // Fallback for old format
+    return {
+      outreach_list: responseData.outreach_list || responseData,
+      usage_metrics: {
+        agent_count: 5,
+        task_count: 6,
+        execution_time: 0,
+        successful_requests: 1
+      }
+    }
   } catch (error) {
     console.error('API error:', error)
     throw error

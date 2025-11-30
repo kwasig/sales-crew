@@ -291,10 +291,14 @@ class ResearchCrew:
         )
 
 
-    def execute_research(self, inputs: dict) -> str:
+    def execute_research(self, inputs: dict) -> dict:
         """
         Run the 6-step pipeline with 5 agents in sequential order.
+        Returns structured response with usage metrics.
         """
+        import time
+        start_time = time.time()
+        
         crew = Crew(
             agents=[
                 self.aggregator_agent,
@@ -316,7 +320,24 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        execution_time = time.time() - start_time
+        
+        # Extract usage metrics from crew execution
+        usage_metrics = {
+            "total_tokens": getattr(results, 'total_tokens', 0),
+            "prompt_tokens": getattr(results, 'prompt_tokens', 0),
+            "completion_tokens": getattr(results, 'completion_tokens', 0),
+            "agent_count": len(crew.agents),
+            "task_count": len(crew.tasks),
+            "execution_time": round(execution_time, 2),
+            "successful_requests": 1
+        }
+        
+        return {
+            "data": json.loads(results.pydantic.model_dump_json()),
+            "usage_metrics": usage_metrics
+        }
 
 
 def main():

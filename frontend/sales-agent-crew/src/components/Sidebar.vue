@@ -46,6 +46,9 @@
             </button>
           </div>
         </div>
+        
+        <!-- Usage Component -->
+        <UsageComponent :usage-metrics="currentUsageMetrics" />
       </div>
       
       <!-- Scrollable History -->
@@ -131,11 +134,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
+import UsageComponent from './UsageComponent.vue'
 
 const { userId } = useAuth()
 const searchHistory = ref([])
 const isCollapsed = ref(false)
 const showConfirmModal = ref(false)
+const currentUsageMetrics = ref({})
 
 const loadSearch = (search) => {
   emit('loadSearch', search)
@@ -203,16 +208,27 @@ const emit = defineEmits(['loadSearch'])
 
 // Expose method to add new searches
 defineExpose({
-  addSearch: (query, results, expandedState) => {
+  addSearch: (query, results, expandedState, usageMetrics) => {
     const newSearch = {
       query,
       results,
       expandedState,
+      usageMetrics: usageMetrics || {},
       timestamp: Date.now()
     }
     searchHistory.value.unshift(newSearch)
     searchHistory.value = searchHistory.value.slice(0, 50) // Keep only last 50 searches
     saveHistory()
+    
+    // Update current usage metrics for display
+    if (usageMetrics) {
+      currentUsageMetrics.value = usageMetrics
+    }
+  },
+  
+  // Method to update usage metrics
+  updateUsageMetrics: (metrics) => {
+    currentUsageMetrics.value = metrics || {}
   }
 })
 </script> 
