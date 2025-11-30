@@ -3,7 +3,7 @@
     <!-- Collapse Button -->
     <button 
       @click="isCollapsed = !isCollapsed"
-      class="absolute -right-3 top-4 z-20 bg-white rounded-full p-1 shadow-md border border-gray-200"
+      class="absolute -right-3 top-4 z-20 bg-white dark:bg-dark-800 rounded-full p-1 shadow-md border border-gray-200 dark:border-dark-600"
     >
       <svg 
         class="w-4 h-4 text-gray-600 transform transition-transform"
@@ -18,17 +18,17 @@
 
     <!-- Sidebar Content -->
     <div 
-      class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300 h-full"
+      class="bg-white dark:bg-dark-800 border-r border-gray-200 dark:border-dark-600 flex flex-col transition-all duration-300 h-full"
       :class="{ 'w-64': !isCollapsed, 'w-0': isCollapsed }"
     >
       <!-- Fixed Header with Actions -->
-      <div class="p-4 border-b border-gray-200 flex-shrink-0" v-show="!isCollapsed">
+      <div class="p-4 border-b border-gray-200 dark:border-dark-600 flex-shrink-0" v-show="!isCollapsed">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold text-gray-900">Search History</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Search History</h2>
           <div class="flex space-x-2">
             <button
               @click="exportAllChats"
-              class="text-gray-600 hover:text-gray-900"
+              class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
               title="Export All"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@
             </button>
             <button
               @click="confirmClearAll"
-              class="text-gray-600 hover:text-red-600"
+              class="text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
               title="Clear All"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,24 +50,24 @@
       
       <!-- Scrollable History -->
       <div 
-        class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400"
+        class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-dark-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-dark-500"
         v-show="!isCollapsed"
       >
         <div class="p-4 space-y-3">
           <div
             v-for="(search, index) in searchHistory"
             :key="index"
-            class="group relative bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+            class="group relative bg-gray-50 dark:bg-dark-700 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
           >
             <!-- Search Content -->
             <div class="pr-8">
               <div 
-                class="text-sm font-medium text-gray-900 break-words"
+                class="text-sm font-medium text-gray-900 dark:text-gray-100 break-words"
                 style="word-break: break-word;"
               >
                 {{ search.query }}
               </div>
-              <div class="text-xs text-gray-500 mt-1">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {{ new Date(search.timestamp).toLocaleString() }}
               </div>
             </div>
@@ -76,7 +76,7 @@
             <div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <button
                 @click.stop="exportSearch(search)"
-                class="p-1 text-gray-400 hover:text-gray-600"
+                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                 title="Export"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@
               </button>
               <button
                 @click.stop="deleteSearch(index)"
-                class="p-1 text-gray-400 hover:text-red-600"
+                class="p-1 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400"
                 title="Delete"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,13 +106,13 @@
 
     <!-- Confirmation Modal -->
     <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Clear All History?</h3>
-        <p class="text-gray-600 mb-4">This action cannot be undone. Are you sure you want to clear all search history?</p>
+      <div class="bg-white dark:bg-dark-800 rounded-lg p-6 max-w-sm mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Clear All History?</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">This action cannot be undone. Are you sure you want to clear all search history?</p>
         <div class="flex justify-end space-x-3">
           <button
             @click="showConfirmModal = false"
-            class="px-4 py-2 text-gray-600 hover:text-gray-800"
+            class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
           >
             Cancel
           </button>

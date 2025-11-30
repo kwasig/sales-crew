@@ -1,5 +1,5 @@
 <template>
-  <header class="shadow-md bg-white">
+  <header class="shadow-md bg-white dark:bg-dark-800 transition-colors duration-200">
     <div class="h-16 mx-auto px-4 sm:px-6 flex items-center justify-between">
       <!-- Left: Logo & Brand -->
       <div class="flex items-center space-x-2 sm:space-x-4">
@@ -7,22 +7,23 @@
           <img 
             src="https://sambanova.ai/hubfs/sambanova-logo-black.png" 
             alt="Samba Sales Co-Pilot Logo" 
-            class="h-6 sm:h-8"
+            class="h-6 sm:h-8 dark:invert"
           />
         </div>
-        <h1 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
+        <h1 class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
           Samba Sales Co-Pilot
         </h1>
       </div>
 
       <!-- Right: User Button and DateTime -->
       <div class="flex items-center space-x-4">
-        <div class="hidden sm:block text-sm text-gray-600">
+        <ThemeToggle />
+        <div class="hidden sm:block text-sm text-gray-600 dark:text-gray-400">
           {{ currentDateTime }}
         </div>
         <button
           @click="openSettings"
-          class="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+          class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -46,6 +47,7 @@
 import { ref, computed } from 'vue'
 import { SignedIn, UserButton } from '@clerk/vue'
 import SettingsModal from './SettingsModal.vue'
+import ThemeToggle from './ThemeToggle.vue'
 
 const settingsModalRef = ref(null)
 

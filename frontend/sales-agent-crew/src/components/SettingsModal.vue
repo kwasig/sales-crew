@@ -5,10 +5,10 @@
       <div class="fixed inset-0 bg-black opacity-30" @click="close"></div>
 
       <!-- Modal -->
-      <div class="relative w-full max-w-lg bg-white rounded-xl shadow-lg p-6">
+      <div class="relative w-full max-w-lg bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">API Settings</h2>
-          <button @click="close" class="text-gray-500 hover:text-gray-700">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">API Settings</h2>
+          <button @click="close" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -16,24 +16,24 @@
         </div>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+        <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded">
           {{ errorMessage }}
         </div>
 
         <!-- Success Message -->
-        <div v-if="successMessage" class="mb-4 p-3 bg-green-100 text-green-700 rounded">
+        <div v-if="successMessage" class="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded">
           {{ successMessage }}
         </div>
 
         <div class="space-y-6">
           <!-- SambaNova API Key -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               SambaNova API Key
               <a 
                 href="https://cloud.sambanova.ai/"
                 target="_blank"
-                class="text-primary-600 hover:text-primary-700 ml-2 text-sm"
+                class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-2 text-sm"
               >
                 Get Key →
               </a>
@@ -43,11 +43,11 @@
                 v-model="sambanovaKey"
                 :type="sambanovaKeyVisible ? 'text' : 'password'"
                 placeholder="Enter your SambaNova API Key"
-                class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
+                class="block w-full border border-gray-300 dark:border-dark-600 rounded-md shadow-sm p-2 bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
               />
               <button 
                 @click="toggleSambanovaKeyVisibility"
-                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <svg v-if="sambanovaKeyVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
@@ -88,12 +88,12 @@
 
           <!-- Exa API Key -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Exa API Key
               <a 
                 href="https://exa.example.com/get-key"
                 target="_blank"
-                class="text-primary-600 hover:text-primary-700 ml-2 text-sm"
+                class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-2 text-sm"
               >
                 Get Key →
               </a>
@@ -103,11 +103,11 @@
                 v-model="exaKey"
                 :type="exaKeyVisible ? 'text' : 'password'"
                 placeholder="Enter your Exa API Key"
-                class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
+                class="block w-full border border-gray-300 dark:border-dark-600 rounded-md shadow-sm p-2 bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
               />
               <button 
                 @click="toggleExaKeyVisibility"
-                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <svg v-if="exaKeyVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
