@@ -1,18 +1,18 @@
 <template>
-  <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-200">
     <!-- Warning Message -->
-    <div v-if="missingKeys.length > 0" class="mb-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+    <div v-if="missingKeys.length > 0" class="mb-4 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700">
       <div class="flex">
-        <svg class="h-6 w-6 text-yellow-600 flex-shrink-0 mr-3" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mr-3" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 110-16 8 8 0 010 16zm1-13a1 1 0 10-2 0v4a1 1 0 102 0V5zm0 6a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
         </svg>
         <div>
-          <p class="font-medium text-yellow-800">
+          <p class="font-medium text-yellow-800 dark:text-yellow-300">
             Missing API Key(s): {{ missingKeys.join(', ') }}.
             Please set them in the
             <button
               @click="$emit('openSettings')"
-              class="underline text-blue-600 hover:text-blue-800"
+              class="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
             >
               settings
             </button>.
@@ -27,7 +27,7 @@
           v-model="searchQuery"
           type="text"
           placeholder="Example: Generate leads for retail startups in California interested in AI"
-          class="block w-full pl-5 pr-12 py-4 text-base rounded-lg border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+          class="block w-full pl-5 pr-12 py-4 text-base rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           @keyup.enter="handleSearch"
           :disabled="isLoading || isRecording"
         />
@@ -37,10 +37,10 @@
           @click="toggleRecording"
           :disabled="isLoading"
           :class="{
-            'text-orange-500': !isRecording,
-            'text-red-500 animate-pulse': isRecording
+            'text-orange-500 dark:text-orange-400': !isRecording,
+            'text-red-500 dark:text-red-400 animate-pulse': isRecording
           }"
-          class="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition-colors"
           title="Voice Search"
         >
           <svg 
@@ -69,8 +69,8 @@
     </div>
     
     <!-- Recording Status -->
-    <div v-if="isRecording" class="mt-2 text-sm text-gray-600 flex items-center space-x-2">
-      <span class="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+    <div v-if="isRecording" class="mt-2 text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
+      <span class="inline-block w-2 h-2 bg-red-500 dark:bg-red-400 rounded-full animate-pulse"></span>
       <span>Recording... Click microphone to stop</span>
     </div>
 
