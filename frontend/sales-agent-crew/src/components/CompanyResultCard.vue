@@ -43,30 +43,30 @@ const formatUrl = (url) => {
 </script>
 
 <template>
-  <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+  <div class="border border-gray-200 dark:border-dark-600 rounded-lg overflow-hidden shadow-sm">
     <!-- Card Header -->
     <div 
       @click="toggleExpand" 
-      class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition group"
+      class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700 transition group"
     >
       <div class="flex-grow">
-        <h3 class="text-lg font-semibold text-blue-600 flex items-center">
+        <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 flex items-center">
           {{ company.company_name }}
-          <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+          <span class="ml-2 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
             {{ company.funding_status }}
           </span>
         </h3>
-        <div class="mt-2 space-y-1 text-gray-600">
+        <div class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
           <div class="flex items-center">
-            <BuildingOffice2Icon class="w-4 h-4 mr-2 text-gray-400" />
+            <BuildingOffice2Icon class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
             <span>{{ company.headquarters }}</span>
           </div>
           <div class="flex items-center">
-            <GlobeAltIcon class="w-4 h-4 mr-2 text-gray-400" />
+            <GlobeAltIcon class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
             <a 
               :href="formatUrl(company.website)" 
               target="_blank" 
-              class="text-blue-500 hover:underline"
+              class="text-blue-500 dark:text-blue-400 hover:underline"
               @click.stop
             >
               {{ company.website }}
@@ -76,7 +76,7 @@ const formatUrl = (url) => {
       </div>
       <svg 
         :class="[
-          'w-6 h-6 text-gray-400 transition-transform', 
+          'w-6 h-6 text-gray-400 dark:text-gray-500 transition-transform', 
           isExpanded ? 'rotate-180' : ''
         ]"
         fill="none" 
@@ -96,17 +96,17 @@ const formatUrl = (url) => {
     <!-- Expanded Content -->
     <div 
       v-if="isExpanded" 
-      class="p-4 bg-gray-50 border-t space-y-6"
+      class="p-4 bg-gray-50 dark:bg-dark-700 border-t border-gray-200 dark:border-dark-600 space-y-6"
     >
       <!-- Funding Amount -->
       <div>
         <div class="flex items-center mb-1">
-          <CurrencyDollarIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <CurrencyDollarIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Funding Amount
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.funding_amount }}
         </p>
       </div>
@@ -114,12 +114,12 @@ const formatUrl = (url) => {
       <!-- Key Contacts -->
       <div>
         <div class="flex items-center mb-1">
-          <UserIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <UserIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Key Contacts
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.key_contacts }}
         </p>
       </div>
@@ -127,12 +127,12 @@ const formatUrl = (url) => {
       <!-- Product -->
       <div>
         <div class="flex items-center mb-1">
-          <CpuChipIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <CpuChipIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Product
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.product }}
         </p>
       </div>
@@ -140,12 +140,12 @@ const formatUrl = (url) => {
       <!-- Relevant Trends -->
       <div>
         <div class="flex items-center mb-1">
-          <ChartBarIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <ChartBarIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Relevant Trends
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.relevant_trends }}
         </p>
       </div>
@@ -153,12 +153,12 @@ const formatUrl = (url) => {
       <!-- Opportunities -->
       <div>
         <div class="flex items-center mb-1">
-          <LightBulbIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <LightBulbIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Opportunities
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.opportunities }}
         </p>
       </div>
@@ -166,12 +166,12 @@ const formatUrl = (url) => {
       <!-- Challenges -->
       <div>
         <div class="flex items-center mb-1">
-          <ExclamationTriangleIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <ExclamationTriangleIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Challenges
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.challenges }}
         </p>
       </div>
@@ -179,12 +179,12 @@ const formatUrl = (url) => {
       <!-- Email Subject -->
       <div>
         <div class="flex items-center mb-1">
-          <CurrencyDollarIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <CurrencyDollarIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Email Subject
           </h4>
         </div>
-        <p class="text-gray-600 pl-7">
+        <p class="text-gray-600 dark:text-gray-400 pl-7">
           {{ company.email_subject }}
         </p>
       </div>
@@ -192,17 +192,17 @@ const formatUrl = (url) => {
       <!-- Email Body with Copy Button -->
       <div class="relative">
         <div class="flex items-center mb-1">
-          <ClipboardIcon class="w-5 h-5 mr-2 text-gray-500" />
-          <h4 class="font-semibold text-gray-700">
+          <ClipboardIcon class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+          <h4 class="font-semibold text-gray-700 dark:text-gray-300">
             Email Body
           </h4>
         </div>
-        <p class="text-gray-600 pl-7 mb-2 whitespace-pre-line">
+        <p class="text-gray-600 dark:text-gray-400 pl-7 mb-2 whitespace-pre-line">
           {{ company.email_body }}
         </p>
         <button 
           @click="copyEmailBody"
-          class="absolute top-0 right-0 text-gray-500 hover:text-blue-600 transition"
+          class="absolute top-0 right-0 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
           title="Copy Email Body"
         >
           <ClipboardIcon class="w-6 h-6" />

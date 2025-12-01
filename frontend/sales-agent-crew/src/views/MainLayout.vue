@@ -13,7 +13,7 @@
         <div class="container mx-auto px-4 py-8">
           <div class="max-w-4xl mx-auto">
             <!-- Search Section (Fixed) -->
-            <div class="sticky top-0 z-10 bg-gray-50 pt-4 pb-2">
+            <div class="sticky top-0 z-10 bg-gray-50 dark:bg-dark-900 pt-4 pb-2">
               <SearchSection 
                 :keys-updated="keysUpdated"
                 :isLoading="isLoading"
@@ -26,18 +26,18 @@
             <div class="mt-4">
               <!-- Loading Progress Bar -->
               <div v-if="isLoading" class="mt-8">
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="bg-white dark:bg-dark-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-3">
                       <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
-                      <h3 class="text-lg font-semibold text-gray-900">{{ currentLoadingMessage }}</h3>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ currentLoadingMessage }}</h3>
                     </div>
-                    <span class="text-sm text-gray-500">Please wait</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Please wait</span>
                   </div>
 
                   <div class="w-full bg-primary-600 h-2 rounded-full animate-pulse"></div>
                   
-                  <div class="text-sm text-gray-500">
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
                     <span>This may take a few moments</span>
                   </div>
                 </div>
@@ -60,8 +60,8 @@
 
               <!-- No Results Message -->
               <div v-if="!isLoading && results.length === 0" class="mt-8">
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-                  <p class="text-gray-600">No results found. Try modifying your search query.</p>
+                <div class="bg-white dark:bg-dark-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600 text-center">
+                  <p class="text-gray-600 dark:text-gray-400">No results found. Try modifying your search query.</p>
                 </div>
               </div>
             </div>

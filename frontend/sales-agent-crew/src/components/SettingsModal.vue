@@ -5,10 +5,10 @@
       <div class="fixed inset-0 bg-black opacity-30" @click="close"></div>
 
       <!-- Modal -->
-      <div class="relative w-full max-w-lg bg-white rounded-xl shadow-lg p-6">
+      <div class="relative w-full max-w-lg bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">API Settings</h2>
-          <button @click="close" class="text-gray-500 hover:text-gray-700">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h2>
+          <button @click="close" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -16,24 +16,66 @@
         </div>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+        <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded">
           {{ errorMessage }}
         </div>
 
         <!-- Success Message -->
-        <div v-if="successMessage" class="mb-4 p-3 bg-green-100 text-green-700 rounded">
+        <div v-if="successMessage" class="mb-4 p-3 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded">
           {{ successMessage }}
         </div>
 
         <div class="space-y-6">
+          <!-- Theme Settings -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Theme
+            </label>
+            <div class="flex space-x-4">
+              <button
+                @click="setTheme('light')"
+                :class="[
+                  'px-4 py-2 rounded-md border text-sm font-medium transition-colors',
+                  theme === 'light' 
+                    ? 'bg-primary-600 text-white border-primary-600' 
+                    : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-600'
+                ]"
+              >
+                Light
+              </button>
+              <button
+                @click="setTheme('dark')"
+                :class="[
+                  'px-4 py-2 rounded-md border text-sm font-medium transition-colors',
+                  theme === 'dark' 
+                    ? 'bg-primary-600 text-white border-primary-600' 
+                    : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-600'
+                ]"
+              >
+                Dark
+              </button>
+              <button
+                @click="setTheme('auto')"
+                :class="[
+                  'px-4 py-2 rounded-md border text-sm font-medium transition-colors',
+                  theme === 'auto' 
+                    ? 'bg-primary-600 text-white border-primary-600' 
+                    : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-600'
+                ]"
+              >
+                Auto
+              </button>
+            </div>
+          </div>
+
           <!-- SambaNova API Key -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               SambaNova API Key
               <a 
                 href="https://cloud.sambanova.ai/"
                 target="_blank"
-                class="text-primary-600 hover:text-primary-700 ml-2 text-sm"
+                class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 ml-2 text-sm"
               >
                 Get Key →
               </a>
@@ -43,11 +85,11 @@
                 v-model="sambanovaKey"
                 :type="sambanovaKeyVisible ? 'text' : 'password'"
                 placeholder="Enter your SambaNova API Key"
-                class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
+                class="block w-full border border-gray-300 dark:border-dark-600 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100"
               />
               <button 
                 @click="toggleSambanovaKeyVisibility"
-                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               >
                 <svg v-if="sambanovaKeyVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
@@ -88,12 +130,12 @@
 
           <!-- Exa API Key -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Exa API Key
               <a 
                 href="https://exa.example.com/get-key"
                 target="_blank"
-                class="text-primary-600 hover:text-primary-700 ml-2 text-sm"
+                class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 ml-2 text-sm"
               >
                 Get Key →
               </a>
@@ -103,11 +145,11 @@
                 v-model="exaKey"
                 :type="exaKeyVisible ? 'text' : 'password'"
                 placeholder="Enter your Exa API Key"
-                class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
+                class="block w-full border border-gray-300 dark:border-dark-600 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100"
               />
               <button 
                 @click="toggleExaKeyVisibility"
-                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               >
                 <svg v-if="exaKeyVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
@@ -155,25 +197,29 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@clerk/vue'
 import { encryptKey, decryptKey } from '../utils/encryption'
+import { useDarkMode } from '../composables/useDarkMode'
 
 const isOpen = ref(false)
 const sambanovaKey = ref('')
 const exaKey = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
+const theme = ref('auto')
 
 // Key visibility controls
 const sambanovaKeyVisible = ref(false)
 const exaKeyVisible = ref(false)
 
 const { userId } = useAuth()
+const { setDarkMode } = useDarkMode()
 
 // Define the emit function
 const emit = defineEmits(['keysUpdated'])
 
-// Load keys on mount
+// Load keys and theme on mount
 onMounted(async () => {
   await loadKeys()
+  loadTheme()
 })
 
 const loadKeys = async () => {
@@ -190,6 +236,33 @@ const loadKeys = async () => {
   } catch (error) {
     console.error('Failed to load keys:', error)
     errorMessage.value = 'Failed to load saved keys'
+  }
+}
+
+// Theme management
+const loadTheme = () => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    theme.value = savedTheme
+    applyTheme(savedTheme)
+  }
+}
+
+const setTheme = (selectedTheme) => {
+  theme.value = selectedTheme
+  localStorage.setItem('theme', selectedTheme)
+  applyTheme(selectedTheme)
+}
+
+const applyTheme = (selectedTheme) => {
+  if (selectedTheme === 'light') {
+    setDarkMode(false)
+  } else if (selectedTheme === 'dark') {
+    setDarkMode(true)
+  } else {
+    // Auto mode - follow system preference
+    localStorage.removeItem('darkMode')
+    setDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches)
   }
 }
 
