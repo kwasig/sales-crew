@@ -13,7 +13,7 @@
         <div class="container mx-auto px-4 py-8">
           <div class="max-w-4xl mx-auto">
             <!-- Search Section (Fixed) -->
-            <div class="sticky top-0 z-10 bg-gray-50 pt-4 pb-2">
+            <div class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-900 pt-4 pb-2">
               <SearchSection 
                 :keys-updated="keysUpdated"
                 :isLoading="isLoading"
