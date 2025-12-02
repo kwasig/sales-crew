@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+from dotenv import load_dotenv
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
@@ -12,6 +13,18 @@ from tools.market_research_tool import MarketResearchTool
 from tools.financial_analysis_tool import FinancialAnalysisTool
 from typing import List
 from pydantic import BaseModel
+
+# Load environment variables
+load_dotenv()
+
+# Import Langfuse for observability
+try:
+    from langfuse import Langfuse
+    from langfuse.decorators import observe, langfuse_context
+    LANGFUSE_AVAILABLE = True
+except ImportError:
+    LANGFUSE_AVAILABLE = False
+    print("Warning: Langfuse not available. Running without observability.")
 
 
 class Outreach(BaseModel):
@@ -64,6 +77,20 @@ class ResearchCrew:
         )
         self.exa_key = exa_key
         self.sambanova_key = sambanova_key
+        
+        # Initialize Langfuse for observability
+        self.langfuse = None
+        if LANGFUSE_AVAILABLE:
+            try:
+                self.langfuse = Langfuse(
+                    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+                    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+                    host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+                )
+                print("Langfuse initialized successfully")
+            except Exception as e:
+                print(f"Warning: Failed to initialize Langfuse: {e}")
+        
         self._initialize_agents()
         self._initialize_tasks()
         
@@ -79,7 +106,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[CompanyIntelligenceTool(api_key=self.exa_key)]
+            tools=[CompanyIntelligenceTool(api_key=self.exa_key, step_callback=self._agent_callback if LANGFUSE_AVAILABLE else None)]
         )
 
         # 2) data_extraction_agent
@@ -90,7 +117,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True
-        )
+        , step_callback=self._agent_callback if LANGFUSE_AVAILABLE else None)
 
         # 3) market_trends_agent
         self.market_trends_agent = Agent(
@@ -100,7 +127,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[MarketResearchTool(api_key=self.exa_key)]
+            tools=[MarketResearchTool(api_key=self.exa_key, step_callback=self._agent_callback if LANGFUSE_AVAILABLE else None)]
         )
 
         # 3.5) financial_analysis_agent (NEW)
@@ -113,7 +140,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[FinancialAnalysisTool(api_key=self.exa_key)]
+            tools=[FinancialAnalysisTool(api_key=self.exa_key, step_callback=self._agent_callback if LANGFUSE_AVAILABLE else None)]
         )
 
         # 4) outreach_agent
@@ -124,7 +151,29 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True
-        )
+        , step_callback=self._agent_callback if LANGFUSE_AVAILABLE else None)
+
+
+    
+    def _agent_callback(self, step_output):
+        """Callback to track agent execution with Langfuse"""
+        if self.langfuse and step_output:
+            try:
+                # Extract token usage and other metrics from step output
+                token_usage = getattr(step_output, 'token_usage', {})
+                
+                langfuse_context.update_current_observation(
+                    metadata={
+                        "agent_name": getattr(step_output, 'agent', 'unknown'),
+                        "task": getattr(step_output, 'task', 'unknown'),
+                        "token_usage": token_usage,
+                        "completion_tokens": getattr(token_usage, 'completion_tokens', 0),
+                        "prompt_tokens": getattr(token_usage, 'prompt_tokens', 0),
+                        "total_tokens": getattr(token_usage, 'total_tokens', 0)
+                    }
+                )
+            except Exception as e:
+                print(f"Warning: Failed to log agent callback: {e}")
 
     def _initialize_tasks(self) -> None:
         """
@@ -291,10 +340,23 @@ class ResearchCrew:
         )
 
 
+    @observe(as_type="crewai_execution")
     def execute_research(self, inputs: dict) -> str:
         """
         Run the 6-step pipeline with 5 agents in sequential order.
         """
+        if self.langfuse:
+            langfuse_context.update_current_trace(
+                name="sales-crew-execution",
+                metadata={
+                    "industry": inputs.get("industry"),
+                    "geography": inputs.get("geography"),
+                    "funding_stage": inputs.get("funding_stage"),
+                    "company_stage": inputs.get("company_stage"),
+                    "product": inputs.get("product")
+                }
+            )
+        
         crew = Crew(
             agents=[
                 self.aggregator_agent,
@@ -315,8 +377,36 @@ class ResearchCrew:
             verbose=True,
             memory=False
         )
-        results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        try:
+            results = crew.kickoff(inputs=inputs)
+            result_json = results.pydantic.model_dump_json()
+            
+            if self.langfuse:
+                # Log successful execution
+                langfuse_context.update_current_observation(
+                    status="success",
+                    output=result_json,
+                    metadata={
+                        "agent_count": 5,
+                        "task_count": 6,
+                        "process_type": "sequential"
+                    }
+                )
+                self.langfuse.flush()
+            
+            return result_json
+            
+        except Exception as e:
+            if self.langfuse:
+                # Log error
+                langfuse_context.update_current_observation(
+                    status="error",
+                    level="ERROR",
+                    status_message=str(e)
+                )
+                self.langfuse.flush()
+            raise
 
 
 def main():
