@@ -1,8 +1,9 @@
 from crewai.tools import BaseTool
-from typing import Optional
+from typing import Optional, Any
 from pydantic import Field, ConfigDict
 import sys
 import os
+from langfuse.decorators import observe, langfuse_context
 
 # Ensure parent directory is in the path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -24,7 +25,9 @@ class MarketResearchTool(BaseTool):
 
     service: MarketResearchService = Field(default_factory=MarketResearchService)
     api_key: str = Field(default="")
+    langfuse_client: Any = Field(default=None)
 
+    @observe(as_type="span")
     def _run(
         self,
         industry: Optional[str] = None,
@@ -40,6 +43,19 @@ class MarketResearchTool(BaseTool):
         Returns:
             str: Market research insights
         """
+        # Add metadata to Langfuse observation
+        if self.langfuse_client:
+            langfuse_context.update_current_observation(
+                input={
+                    "industry": industry,
+                    "product": product
+                },
+                metadata={
+                    "tool_name": "MarketResearchTool",
+                    "search_type": "market_research"
+                }
+            )
+        
         if not industry and not product:
             raise ValueError(
                 "At least one search parameter must be provided (industry or product)."
@@ -47,10 +63,19 @@ class MarketResearchTool(BaseTool):
         
         self.service.api_key = self.api_key
 
-        return self.service.generate_market_research(
+        result = self.service.generate_market_research(
             industry=industry,
             product=product
         )
+        
+        # Update observation with output
+        if self.langfuse_client:
+            langfuse_context.update_current_observation(
+                output={"result_length": len(result)},
+                metadata={"status": "completed"}
+            )
+        
+        return result
 
 if __name__ == "__main__":
     tool = MarketResearchTool(api_key="your_api_key_here")

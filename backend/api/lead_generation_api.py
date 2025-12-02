@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import time
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from langfuse import Langfuse
+from langfuse.decorators import observe, langfuse_context
 
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -20,6 +22,7 @@ if parent_dir not in sys.path:
 # Services, Tools, etc.
 from services.user_prompt_extractor_service import UserPromptExtractor
 from agent.lead_generation_crew import ResearchCrew
+from utils.envutils import EnvUtils
 
 # Create a global ThreadPoolExecutor if you want concurrency in a single worker
 # for CPU-heavy tasks (Pick a reasonable max_workers based on your environment).
@@ -33,6 +36,27 @@ class LeadGenerationAPI:
         self.app = FastAPI()
         self.setup_cors()
         self.setup_routes()
+        self._initialize_langfuse()
+    
+    def _initialize_langfuse(self):
+        """Initialize Langfuse client with environment configuration"""
+        try:
+            env_utils = EnvUtils()
+            langfuse_config = env_utils.get_langfuse_config()
+            
+            if langfuse_config['enabled'] and langfuse_config['public_key'] and langfuse_config['secret_key']:
+                self.langfuse = Langfuse(
+                    public_key=langfuse_config['public_key'],
+                    secret_key=langfuse_config['secret_key'],
+                    host=langfuse_config['host']
+                )
+                print("Langfuse initialized successfully")
+            else:
+                self.langfuse = None
+                print("Langfuse disabled or missing credentials")
+        except Exception as e:
+            print(f"Failed to initialize Langfuse: {e}")
+            self.langfuse = None
 
     def setup_cors(self):
         # Get allowed origins from environment variable or use default
@@ -56,6 +80,7 @@ class LeadGenerationAPI:
 
     def setup_routes(self):
         @self.app.post("/generate-leads")
+        @observe(as_type="span")
         async def generate_leads(request: Request, background_tasks: BackgroundTasks):
             # Extract API keys from headers
             sambanova_key = request.headers.get("x-sambanova-key")
@@ -78,12 +103,28 @@ class LeadGenerationAPI:
                         content={"error": "Missing prompt in request body"}
                     )
 
+                # Add metadata to Langfuse trace
+                if self.langfuse:
+                    langfuse_context.update_current_trace(
+                        name="lead_generation_api",
+                        user_id="api_user",
+                        metadata={
+                            "prompt_length": len(prompt),
+                            "has_sambanova_key": bool(sambanova_key),
+                            "has_exa_key": bool(exa_key)
+                        }
+                    )
+                    langfuse_context.update_current_observation(
+                        input={"prompt": prompt},
+                        metadata={"api_keys_provided": True}
+                    )
+
                 # Initialize services with API keys
                 extractor = UserPromptExtractor(sambanova_key)
                 extracted_info = extractor.extract_lead_info(prompt)
 
                 # Initialize crew with API keys
-                crew = ResearchCrew(sambanova_key=sambanova_key, exa_key=exa_key)
+                crew = ResearchCrew(sambanova_key=sambanova_key, exa_key=exa_key, langfuse_client=self.langfuse)
 
                 # Offload CPU-bound or time-consuming "execute_research" call 
                 # to a separate thread so it doesn't block the async event loop.
@@ -96,18 +137,55 @@ class LeadGenerationAPI:
                 # Parse result and return
                 parsed_result = json.loads(result)
                 outreach_list = parsed_result.get("outreach_list", [])
+                
+                # Update observation with output
+                if self.langfuse:
+                    langfuse_context.update_current_observation(
+                        output={"companies_found": len(outreach_list)},
+                        metadata={"status": "success"}
+                    )
+                
                 return JSONResponse(content=outreach_list)
 
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                if self.langfuse:
+                    langfuse_context.update_current_observation(
+                        level="ERROR",
+                        status_message="JSON decode error",
+                        output={"error": str(e)}
+                    )
                 return JSONResponse(
                     status_code=500,
                     content={"error": "Invalid JSON response from research crew"}
                 )
             except Exception as e:
+                if self.langfuse:
+                    langfuse_context.update_current_observation(
+                        level="ERROR",
+                        status_message="API error",
+                        output={"error": str(e)}
+                    )
                 return JSONResponse(
                     status_code=500,
                     content={"error": str(e)}
                 )
+            finally:
+                # Ensure Langfuse events are flushed
+                if self.langfuse:
+                    background_tasks.add_task(self._flush_langfuse)
+        
+        # Add health check endpoint
+        @self.app.get("/health")
+        async def health_check():
+            return {"status": "healthy", "langfuse_enabled": self.langfuse is not None}
+    
+    async def _flush_langfuse(self):
+        """Flush Langfuse events asynchronously"""
+        if self.langfuse:
+            try:
+                self.langfuse.flush()
+            except Exception as e:
+                print(f"Error flushing Langfuse: {e}")
 
 def create_app():
     api = LeadGenerationAPI()

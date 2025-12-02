@@ -1,10 +1,11 @@
 # file: tools/financial_analysis_tool.py
 
 from crewai.tools import BaseTool
-from typing import Optional
+from typing import Optional, Any
 from pydantic import Field, ConfigDict
 import sys
 import os
+from langfuse.decorators import observe, langfuse_context
 
 # Ensure parent directory is in the path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

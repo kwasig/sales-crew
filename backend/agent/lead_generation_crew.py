@@ -12,6 +12,8 @@ from tools.market_research_tool import MarketResearchTool
 from tools.financial_analysis_tool import FinancialAnalysisTool
 from typing import List
 from pydantic import BaseModel
+from langfuse.decorators import observe, langfuse_context
+from langfuse import Langfuse
 
 
 class Outreach(BaseModel):
@@ -55,7 +57,7 @@ class ExtractedMarketTrendList(BaseModel):
 
 
 class ResearchCrew:
-    def __init__(self, sambanova_key: str, exa_key: str):
+    def __init__(self, sambanova_key: str, exa_key: str, langfuse_client=None):
         self.llm = LLM(
             model="sambanova/Meta-Llama-3.1-70B-Instruct",
             temperature=0.01,
@@ -64,6 +66,7 @@ class ResearchCrew:
         )
         self.exa_key = exa_key
         self.sambanova_key = sambanova_key
+        self.langfuse_client = langfuse_client
         self._initialize_agents()
         self._initialize_tasks()
         
@@ -79,7 +82,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[CompanyIntelligenceTool(api_key=self.exa_key)]
+            tools=[CompanyIntelligenceTool(api_key=self.exa_key, langfuse_client=self.langfuse_client)]
         )
 
         # 2) data_extraction_agent
@@ -100,7 +103,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[MarketResearchTool(api_key=self.exa_key)]
+            tools=[MarketResearchTool(api_key=self.exa_key, langfuse_client=self.langfuse_client)]
         )
 
         # 3.5) financial_analysis_agent (NEW)
@@ -113,7 +116,7 @@ class ResearchCrew:
             llm=self.llm,
             allow_delegation=False,
             verbose=True,
-            tools=[FinancialAnalysisTool(api_key=self.exa_key)]
+            tools=[FinancialAnalysisTool(api_key=self.exa_key, langfuse_client=self.langfuse_client)]
         )
 
         # 4) outreach_agent
@@ -291,10 +294,23 @@ class ResearchCrew:
         )
 
 
+    @observe(as_type="span")
     def execute_research(self, inputs: dict) -> str:
         """
         Run the 6-step pipeline with 5 agents in sequential order.
         """
+        # Add metadata to Langfuse observation
+        if self.langfuse_client:
+            langfuse_context.update_current_observation(
+                input=inputs,
+                metadata={
+                    "crew_name": "ResearchCrew",
+                    "num_agents": 5,
+                    "num_tasks": 6,
+                    "process": "sequential"
+                }
+            )
+        
         crew = Crew(
             agents=[
                 self.aggregator_agent,
@@ -316,6 +332,14 @@ class ResearchCrew:
             memory=False
         )
         results = crew.kickoff(inputs=inputs)
+        
+        # Update observation with output
+        if self.langfuse_client:
+            langfuse_context.update_current_observation(
+                output={"result_length": len(str(results))},
+                metadata={"status": "completed"}
+            )
+        
         return results.pydantic.model_dump_json()
 
 

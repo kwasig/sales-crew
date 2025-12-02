@@ -36,6 +36,15 @@ class EnvUtils:
             for key, default in config_map.items()
         }
 
+    def get_langfuse_config(self) -> Dict[str, Any]:
+        """Get Langfuse configuration from environment variables"""
+        return {
+            'public_key': self.get_env('LANGFUSE_PUBLIC_KEY'),
+            'secret_key': self.get_env('LANGFUSE_SECRET_KEY'),
+            'host': self.get_env('LANGFUSE_HOST', 'https://cloud.langfuse.com'),
+            'enabled': self.get_env('LANGFUSE_ENABLED', 'true').lower() == 'true'
+        }
+
 # Example usage
 def main():
     # Initialize EnvUtils (will load .env)

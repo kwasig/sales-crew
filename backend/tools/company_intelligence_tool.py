@@ -6,6 +6,7 @@ from pydantic import Field, ConfigDict
 import sys
 import os
 import json
+from langfuse.decorators import observe, langfuse_context
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
@@ -26,7 +27,9 @@ class CompanyIntelligenceTool(BaseTool):
     service: CompanyIntelligenceService = Field(default_factory=CompanyIntelligenceService)
 
     api_key: str = Field(default="")
+    langfuse_client: Any = Field(default=None)
 
+    @observe(as_type="span")
     def _run(
         self, 
         industry: Optional[str] = None,
@@ -38,6 +41,22 @@ class CompanyIntelligenceTool(BaseTool):
         """
         Execute the company intelligence search using Exa.
         """
+        # Add metadata to Langfuse observation
+        if self.langfuse_client:
+            langfuse_context.update_current_observation(
+                input={
+                    "industry": industry,
+                    "company_stage": company_stage,
+                    "geography": geography,
+                    "funding_stage": funding_stage,
+                    "product": product
+                },
+                metadata={
+                    "tool_name": "CompanyIntelligenceTool",
+                    "search_type": "company_intelligence"
+                }
+            )
+        
         try:
             # Accept empty or None for the optional fields
             valid_stages = ["startup", "smb", "enterprise", "growing", "none", ""]
