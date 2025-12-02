@@ -26,6 +26,35 @@
         </div>
 
         <div class="space-y-6">
+          <!-- LLM Model Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              LLM Model
+            </label>
+            <select
+              v-model="selectedModel"
+              class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="sambanova/Meta-Llama-3.1-70B-Instruct">
+                Meta-Llama-3.1-70B-Instruct (Recommended)
+              </option>
+              <option value="sambanova/Meta-Llama-3.1-8B-Instruct">
+                Meta-Llama-3.1-8B-Instruct (Faster)
+              </option>
+              <option value="sambanova/Meta-Llama-3.1-405B-Instruct">
+                Meta-Llama-3.1-405B-Instruct (Most Powerful)
+              </option>
+            </select>
+            <div class="flex justify-end mt-2">
+              <button 
+                @click="saveModel"
+                class="px-3 py-1 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none"
+              >
+                Save Model
+              </button>
+            </div>
+          </div>
+
           <!-- SambaNova API Key -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -145,6 +174,30 @@
               </button>
             </div>
           </div>
+
+          <!-- LLM Model Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              LLM Model
+            </label>
+            <select
+              v-model="selectedModel"
+              class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="sambanova/Meta-Llama-3.1-70B-Instruct">Meta-Llama-3.1-70B-Instruct (Default)</option>
+              <option value="sambanova/Meta-Llama-3.1-8B-Instruct">Meta-Llama-3.1-8B-Instruct (Faster)</option>
+              <option value="sambanova/Meta-Llama-3.1-405B-Instruct">Meta-Llama-3.1-405B-Instruct (Most Powerful)</option>
+              <option value="sambanova/Meta-Llama-3.3-70B-Instruct">Meta-Llama-3.3-70B-Instruct (Latest)</option>
+            </select>
+            <div class="flex justify-end mt-2">
+              <button 
+                @click="saveModel"
+                class="px-3 py-1 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none"
+              >
+                Save Model
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -159,6 +212,7 @@ import { encryptKey, decryptKey } from '../utils/encryption'
 const isOpen = ref(false)
 const sambanovaKey = ref('')
 const exaKey = ref('')
+const selectedModel = ref('sambanova/Meta-Llama-3.1-70B-Instruct')
 const errorMessage = ref('')
 const successMessage = ref('')
 
@@ -180,6 +234,7 @@ const loadKeys = async () => {
   try {
     const savedSambanovaKey = localStorage.getItem(`sambanova_key_${userId}`)
     const savedExaKey = localStorage.getItem(`exa_key_${userId}`)
+    const savedModel = localStorage.getItem(`llm_model_${userId}`)
 
     sambanovaKey.value = savedSambanovaKey
       ? await decryptKey(savedSambanovaKey)
@@ -187,6 +242,7 @@ const loadKeys = async () => {
     exaKey.value = savedExaKey
       ? await decryptKey(savedExaKey)
       : ''
+    selectedModel.value = savedModel || 'sambanova/Meta-Llama-3.1-70B-Instruct'
   } catch (error) {
     console.error('Failed to load keys:', error)
     errorMessage.value = 'Failed to load saved keys'
@@ -246,6 +302,23 @@ const clearExaKey = () => {
   clearMessagesAfterDelay()
 }
 
+const saveModel = async () => {
+  try {
+    if (!selectedModel.value) {
+      errorMessage.value = 'Please select an LLM model!'
+      return
+    }
+    localStorage.setItem(`llm_model_${userId}`, selectedModel.value)
+    successMessage.value = 'LLM model saved successfully!'
+    emit('keysUpdated')
+  } catch (error) {
+    console.error('Failed to save model:', error)
+    errorMessage.value = 'Failed to save LLM model'
+  } finally {
+    clearMessagesAfterDelay()
+  }
+}
+
 // Toggle key visibility
 const toggleSambanovaKeyVisibility = () => {
   sambanovaKeyVisible.value = !sambanovaKeyVisible.value
@@ -275,6 +348,7 @@ defineExpose({
   getKeys: () => ({
     sambanovaKey: sambanovaKey.value,
     exaKey: exaKey.value,
+    selectedModel: selectedModel.value,
   }),
 })
 </script> 

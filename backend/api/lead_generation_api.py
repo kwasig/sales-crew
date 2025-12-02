@@ -60,6 +60,7 @@ class LeadGenerationAPI:
             # Extract API keys from headers
             sambanova_key = request.headers.get("x-sambanova-key")
             exa_key = request.headers.get("x-exa-key")
+            llm_model = request.headers.get("x-llm-model", "sambanova/Meta-Llama-3.1-70B-Instruct")
 
             if not sambanova_key or not exa_key:
                 return JSONResponse(
@@ -82,8 +83,8 @@ class LeadGenerationAPI:
                 extractor = UserPromptExtractor(sambanova_key)
                 extracted_info = extractor.extract_lead_info(prompt)
 
-                # Initialize crew with API keys
-                crew = ResearchCrew(sambanova_key=sambanova_key, exa_key=exa_key)
+                # Initialize crew with API keys and LLM model
+                crew = ResearchCrew(sambanova_key=sambanova_key, exa_key=exa_key, llm_model=llm_model)
 
                 # Offload CPU-bound or time-consuming "execute_research" call 
                 # to a separate thread so it doesn't block the async event loop.

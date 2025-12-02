@@ -107,14 +107,17 @@ const audioChunks = ref([])
 const { userId } = useAuth()
 const sambanovaKey = ref(null)
 const exaKey = ref(null)
+const selectedModel = ref('sambanova/Meta-Llama-3.1-70B-Instruct')
 const errorMessage = ref('')
 const showErrorModal = ref(false)
 
-// Load API keys
+// Load API keys and model
 const loadKeys = async () => {
   try {
     const encryptedSambanovaKey = localStorage.getItem(`sambanova_key_${userId}`)
     const encryptedExaKey = localStorage.getItem(`exa_key_${userId}`)
+    const savedModel = localStorage.getItem(`llm_model_${userId}`)
+    
     if (encryptedSambanovaKey) {
       sambanovaKey.value = await decryptKey(encryptedSambanovaKey)
     } else {
@@ -125,6 +128,7 @@ const loadKeys = async () => {
     } else {
       exaKey.value = null
     }
+    selectedModel.value = savedModel || 'sambanova/Meta-Llama-3.1-70B-Instruct'
   } catch (error) {
     console.error('Failed to load API keys:', error)
   }

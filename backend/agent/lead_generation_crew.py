@@ -55,15 +55,16 @@ class ExtractedMarketTrendList(BaseModel):
 
 
 class ResearchCrew:
-    def __init__(self, sambanova_key: str, exa_key: str):
+    def __init__(self, sambanova_key: str, exa_key: str, llm_model: str = "sambanova/Meta-Llama-3.1-70B-Instruct"):
         self.llm = LLM(
-            model="sambanova/Meta-Llama-3.1-70B-Instruct",
+            model=llm_model,
             temperature=0.01,
             max_tokens=4096,
             api_key=sambanova_key
         )
         self.exa_key = exa_key
         self.sambanova_key = sambanova_key
+        self.llm_model = llm_model
         self._initialize_agents()
         self._initialize_tasks()
         

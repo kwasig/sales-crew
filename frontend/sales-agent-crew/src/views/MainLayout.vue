@@ -143,7 +143,8 @@ const handleSearch = async (query) => {
       throw new Error('Missing API keys')
     }
 
-    const searchResults = await generateLeads(query, { sambanovaKey, exaKey })
+    const selectedModel = localStorage.getItem(`llm_model_${userId}`) || 'sambanova/Meta-Llama-3.1-70B-Instruct'
+    const searchResults = await generateLeads(query, { sambanovaKey, exaKey, selectedModel })
     results.value = searchResults
     
     // Calculate execution time
