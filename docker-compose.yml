@@ -16,6 +16,12 @@ services:
       - ALLOWED_ORIGINS=* # For development/testing
       # For production, you might want to specify domains:
       # - ALLOWED_ORIGINS=https://yourdomain.com,https://api.yourdomain.com
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
