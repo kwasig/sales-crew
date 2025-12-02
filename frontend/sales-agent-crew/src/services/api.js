@@ -24,7 +24,8 @@ export const generateLeads = async (prompt, keys) => {
       {
         headers: {
           'x-sambanova-key': keys.sambanovaKey,
-          'x-exa-key': keys.exaKey
+          'x-exa-key': keys.exaKey,
+          'x-llm-model': keys.selectedModel || 'sambanova/Meta-Llama-3.1-70B-Instruct'
         }
       }
     )
