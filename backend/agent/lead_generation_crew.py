@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+from typing import List
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
@@ -10,8 +11,15 @@ from crewai import Agent, Task, Crew, LLM, Process
 from tools.company_intelligence_tool import CompanyIntelligenceTool
 from tools.market_research_tool import MarketResearchTool
 from tools.financial_analysis_tool import FinancialAnalysisTool
-from typing import List
 from pydantic import BaseModel
+
+# Langfuse integration
+from langfuse import Langfuse
+from langfuse.decorators import observe
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 
 class Outreach(BaseModel):
@@ -56,6 +64,13 @@ class ExtractedMarketTrendList(BaseModel):
 
 class ResearchCrew:
     def __init__(self, sambanova_key: str, exa_key: str):
+        # Initialize Langfuse for observability
+        self.langfuse = Langfuse(
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+        )
+        
         self.llm = LLM(
             model="sambanova/Meta-Llama-3.1-70B-Instruct",
             temperature=0.01,
@@ -291,32 +306,66 @@ class ResearchCrew:
         )
 
 
+    @observe()
     def execute_research(self, inputs: dict) -> str:
         """
         Run the 6-step pipeline with 5 agents in sequential order.
+        Langfuse tracing is automatically applied via the @observe decorator.
         """
-        crew = Crew(
-            agents=[
-                self.aggregator_agent,
-                self.data_extraction_agent,
-                self.market_trends_agent,
-                self.financial_analysis_agent,
-                self.outreach_agent
-            ],
-            tasks=[
-                self.aggregator_search_task,
-                self.data_extraction_task,
-                self.data_enrichment_task,
-                self.market_trends_task,
-                self.financial_analysis_task,
-                self.outreach_task
-            ],
-            process=Process.sequential,
-            verbose=True,
-            memory=False
+        # Create a trace for the entire research execution
+        trace = self.langfuse.trace(
+            name="ResearchCrew Execution",
+            input=inputs,
+            metadata={
+                "model": "sambanova/Meta-Llama-3.1-70B-Instruct",
+                "temperature": 0.01,
+                "max_tokens": 4096
+            }
         )
-        results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        try:
+            crew = Crew(
+                agents=[
+                    self.aggregator_agent,
+                    self.data_extraction_agent,
+                    self.market_trends_agent,
+                    self.financial_analysis_agent,
+                    self.outreach_agent
+                ],
+                tasks=[
+                    self.aggregator_search_task,
+                    self.data_extraction_task,
+                    self.data_enrichment_task,
+                    self.market_trends_task,
+                    self.financial_analysis_task,
+                    self.outreach_task
+                ],
+                process=Process.sequential,
+                verbose=True,
+                memory=False
+            )
+            
+            # Execute the crew with Langfuse monitoring
+            results = crew.kickoff(inputs=inputs)
+            
+            # Log successful execution
+            trace.update(
+                output=results.pydantic.model_dump_json(),
+                status_message="Research completed successfully"
+            )
+            
+            return results.pydantic.model_dump_json()
+            
+        except Exception as e:
+            # Log error to Langfuse
+            trace.update(
+                status_message=f"Research failed: {str(e)}",
+                level="ERROR"
+            )
+            raise e
+        finally:
+            # Ensure Langfuse client is flushed
+            self.langfuse.flush()
 
 
 def main():
