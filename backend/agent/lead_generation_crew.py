@@ -1,6 +1,8 @@
 import sys
 import os
 import json
+import uuid
+from datetime import datetime
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
@@ -10,8 +12,9 @@ from crewai import Agent, Task, Crew, LLM, Process
 from tools.company_intelligence_tool import CompanyIntelligenceTool
 from tools.market_research_tool import MarketResearchTool
 from tools.financial_analysis_tool import FinancialAnalysisTool
-from typing import List
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
+from utils.langfuse_integration import LangfuseIntegration
 
 
 class Outreach(BaseModel):
@@ -55,7 +58,7 @@ class ExtractedMarketTrendList(BaseModel):
 
 
 class ResearchCrew:
-    def __init__(self, sambanova_key: str, exa_key: str):
+    def __init__(self, sambanova_key: str, exa_key: str, user_id: Optional[str] = None):
         self.llm = LLM(
             model="sambanova/Meta-Llama-3.1-70B-Instruct",
             temperature=0.01,
@@ -64,6 +67,9 @@ class ResearchCrew:
         )
         self.exa_key = exa_key
         self.sambanova_key = sambanova_key
+        self.user_id = user_id
+        self.langfuse = LangfuseIntegration()
+        self.trace_id: Optional[str] = None
         self._initialize_agents()
         self._initialize_tasks()
         
@@ -293,8 +299,30 @@ class ResearchCrew:
 
     def execute_research(self, inputs: dict) -> str:
         """
-        Run the 6-step pipeline with 5 agents in sequential order.
+        Run the 6-step pipeline with 5 agents in sequential order with Langfuse logging.
         """
+        # Create Langfuse trace for this research execution
+        self.trace_id = self.langfuse.create_trace(
+            name="research_crew_execution",
+            user_id=self.user_id,
+            metadata={
+                "model": "sambanova/Meta-Llama-3.1-70B-Instruct",
+                "temperature": 0.01,
+                "max_tokens": 4096,
+                "inputs": inputs
+            }
+        )
+        
+        # Log the start of research execution
+        if self.trace_id:
+            self.langfuse.log_task_execution(
+                trace_id=self.trace_id,
+                task_name="research_crew_start",
+                input_data=inputs,
+                output_data=None,
+                metadata={"status": "started", "timestamp": datetime.now().isoformat()}
+            )
+        
         crew = Crew(
             agents=[
                 self.aggregator_agent,
@@ -315,8 +343,40 @@ class ResearchCrew:
             verbose=True,
             memory=False
         )
-        results = crew.kickoff(inputs=inputs)
-        return results.pydantic.model_dump_json()
+        
+        try:
+            results = crew.kickoff(inputs=inputs)
+            final_output = results.pydantic.model_dump_json()
+            
+            # Log successful completion
+            if self.trace_id:
+                self.langfuse.log_task_execution(
+                    trace_id=self.trace_id,
+                    task_name="research_crew_complete",
+                    input_data=inputs,
+                    output_data=final_output,
+                    metadata={"status": "completed", "timestamp": datetime.now().isoformat()}
+                )
+                self.langfuse.flush()
+            
+            return final_output
+            
+        except Exception as e:
+            # Log error to Langfuse
+            if self.trace_id:
+                self.langfuse.log_error(
+                    trace_id=self.trace_id,
+                    error_message=str(e),
+                    context={
+                        "inputs": inputs,
+                        "error_type": type(e).__name__,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                )
+                self.langfuse.flush()
+            
+            # Re-raise the exception
+            raise
 
 
 def main():
